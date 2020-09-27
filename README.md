@@ -7,5 +7,5 @@ This repository contains code for exercises, solutions of the material from
 ## Install requirements
 The `requirements.txt` or conda environemnt `rl.yml` can be found in the root directory. For the installation of the OpenAI gym make sure to follow the [installation](https://github.com/openai/gym#installation) instructions.
 
-## Available Algorithms
-WIP
+## Available Algorithms (WIP)
+Reference for Q-Learning with examples, https://lilianweng.github.io/lil-log/2018/05/05/implementing-deep-reinforcement-learning-models.html
