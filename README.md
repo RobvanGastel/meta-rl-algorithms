@@ -10,6 +10,9 @@ The `requirements.txt` or conda environemnt `rl.yml` can be found in the root di
 ## Available Algorithms (WIP)
 [RL Taxonomy](https://github.com/bennylp/RL-Taxonomy)
 
+Template based of this repository,
+https://github.com/dennybritz/reinforcement-learning
+
 
 ### Dynamic Programming
 TODO: Refactor implementations
