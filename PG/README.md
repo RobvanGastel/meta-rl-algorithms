@@ -1,4 +1,4 @@
-## TODO: Policy Gradient Methods
+## TODO: Policy Gradient
 
 - Understand the difference between value-based and policy-based Reinforcement Learning
 - Understand the REINFORCE Algorithm (Monte Carlo Policy Gradient)
