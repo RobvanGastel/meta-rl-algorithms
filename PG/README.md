@@ -1,5 +1,7 @@
 ## TODO: Policy Gradient
 
+### Learning Goals
+
 - Understand the difference between value-based and policy-based Reinforcement Learning
 - Understand the REINFORCE Algorithm (Monte Carlo Policy Gradient)
 - Understand Actor-Critic (AC) algorithms
@@ -24,6 +26,7 @@
 - Deep Deterministic Policy Gradients: Apply tricks from DQN to Deterministic Policy Gradients ;)
 - Asynchronous Advantage Actor-Critic (A3C): Instead of using an experience replay buffer as in DQN use multiple agents on different threads to explore the state spaces and make decorrelated updates to the actor and the critic.
 
+### Lectures & Readings
 
 - https://lilianweng.github.io/lil-log/2018/04/08/policy-gradient-algorithms.html
 - [Reinforcement Learning: An Introduction](http://incompleteideas.net/book/RLbook2018.pdf) - Chapter 13: Policy Gradient Methods
