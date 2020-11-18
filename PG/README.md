@@ -30,6 +30,9 @@
 TODO: Refactor the lectures & readings
 
 - https://lilianweng.github.io/lil-log/2018/04/08/policy-gradient-algorithms.html
+- https://spinningup.openai.com/en/latest/spinningup/exercises.html
+- http://inoryy.com/post/tensorflow2-deep-reinforcement-learning/
+
 - [Reinforcement Learning: An Introduction](http://incompleteideas.net/book/RLbook2018.pdf) - Chapter 13: Policy Gradient Methods
 - [Deterministic Policy Gradient Algorithms](http://jmlr.org/proceedings/papers/v32/silver14.pdf)
 - [Deterministic Policy Gradient Algorithms (Talk)](http://techtalks.tv/talks/deterministic-policy-gradient-algorithms/61098/)
