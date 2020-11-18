@@ -15,13 +15,13 @@ A good global scoped [RL Taxonomy](https://github.com/bennylp/RL-Taxonomy).
 ### Dynamic Programming
 TODO: Refactor implementations
 - General Policy Iteration (GPI)
-- Policy evaluation
-- Policy iteration
-- Value iteration
+- Policy evaluation (Prediction problem)
+- Policy iteration (Control problem)
+- Value iteration (Control problem)
 
 
 ###  Temporal Difference (TD) and Q-Learning
-- Sarsa
+- SARSA
 - Q-learning
 
 
