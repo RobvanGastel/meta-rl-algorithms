@@ -20,19 +20,9 @@
 
 ### Lectures & Readings
 
-**Required:**
-
 - [Human-Level Control through Deep Reinforcement Learning](http://www.readcube.com/articles/10.1038/nature14236)
-- [Demystifying Deep Reinforcement Learning](https://ai.intel.com/demystifying-deep-reinforcement-learning/)
 - David Silver's RL Course Lecture 6 - Value Function Approximation ([video](https://www.youtube.com/watch?v=UoPei5o4fps), [slides](http://www0.cs.ucl.ac.uk/staff/d.silver/web/Teaching_files/FA.pdf))
-
-**Optional:**
-
 - [Using Keras and Deep Q-Network to Play FlappyBird](https://yanpanlau.github.io/2016/07/10/FlappyBird-Keras.html)
 - [Deep Reinforcement Learning with Double Q-learning](http://arxiv.org/abs/1509.06461)
 - [Prioritized Experience Replay](http://arxiv.org/abs/1511.05952)
 
-**Deep Learning:**
-
-- [Tensorflow](http://www.tensorflow.org)
-- [Deep Learning Books](http://www.deeplearningbook.org/)

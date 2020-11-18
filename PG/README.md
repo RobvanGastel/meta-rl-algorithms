@@ -6,8 +6,8 @@
 - Understand the REINFORCE Algorithm (Monte Carlo Policy Gradient)
 - Understand Actor-Critic (AC) algorithms
 - Understand Advantage Functions
-- Understand Deterministic Policy Gradients (Optional)
-- Understand how to scale up Policy Gradient methods using asynchronous actor-critic and Neural Networks (Optional)
+- Understand Deterministic Policy Gradients 
+- Understand how to scale up Policy Gradient methods using asynchronous actor-critic and Neural Networks 
 
 
 ### Summary
@@ -27,6 +27,7 @@
 - Asynchronous Advantage Actor-Critic (A3C): Instead of using an experience replay buffer as in DQN use multiple agents on different threads to explore the state spaces and make decorrelated updates to the actor and the critic.
 
 ### Lectures & Readings
+TODO: Refactor the lectures & readings
 
 - https://lilianweng.github.io/lil-log/2018/04/08/policy-gradient-algorithms.html
 - [Reinforcement Learning: An Introduction](http://incompleteideas.net/book/RLbook2018.pdf) - Chapter 13: Policy Gradient Methods
