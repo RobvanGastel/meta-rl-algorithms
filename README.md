@@ -7,8 +7,7 @@ readings:
 
 Lectures:
 * [David Silver's Reinforcement Learning Course](http://www0.cs.ucl.ac.uk/staff/d.silver/web/Teaching.html)
-- [John Schulman - Deep Reinforcement Learning (4 Lectures)](https://www.youtube.com/playlist?list=PLjKEIQlKCTZYN3CYBlj8r58SbNorobqcp)
-
+* [John Schulman - Deep Reinforcement Learning (4 Lectures)](https://www.youtube.com/playlist?list=PLjKEIQlKCTZYN3CYBlj8r58SbNorobqcp)
 
 Implementations:
 * [OpenAI Spinning Up in Deep RL](https://spinningup.openai.com/en/latest/index.html)
@@ -29,6 +28,7 @@ A good global scope of different Reinforcement Learning algorithms can be found 
 
 ###  Temporal Difference (TD) and Q-Learning
 - SARSA
+- Expected SARSA
 - Q-learning
 
 ### Policy Gradient 
@@ -38,7 +38,6 @@ A good global scope of different Reinforcement Learning algorithms can be found 
 
 ### Deep Q-learning Networks
 - Deep Q-learning Networks (DQN)
-
 
 ### Meta-Reinforcement Learning
 - MAML with Reinforcement Learning
