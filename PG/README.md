@@ -7,7 +7,8 @@
 - Understand Actor-Critic (AC) algorithms
 - Understand Advantage Functions
 - Understand Deterministic Policy Gradients 
-- Understand how to scale up Policy Gradient methods using asynchronous actor-critic and Neural Networks 
+- Understand how to scale up Policy Gradient methods
+- Using asynchronous actor-critic and Neural Networks 
 
 
 ### Summary
