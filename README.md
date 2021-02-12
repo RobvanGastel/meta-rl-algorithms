@@ -40,6 +40,8 @@ A good global scope of different Reinforcement Learning algorithms can be found 
 - Deep Q-learning Networks (DQN)
 
 ### Meta-Reinforcement Learning
-- MAML with Reinforcement Learning
+- RL$^2$/Learning to Reinforcement Learn
+- MAML for Reinforcement Learning
+- PEARL 
 
 
