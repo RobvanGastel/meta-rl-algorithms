@@ -2,11 +2,10 @@ name: rl
 channels:
   - defaults
 dependencies:
-  - matplotlib==3.2.2=0
-  - pandas==1.1.0=py37hb1e8313_0  
-  - gym==0.17.2=py37hc8dfbb8_1
-  - matplotlib-base==3.2.2=py37hddda452_1
-  - pip==20.2.2=py_0
-  - numpy==1.19.1=py37h7e69742_0
+  - matplotlib==3.3.3
+  - pandas==1.2.1
+  - gym==0.17.2
+  - pip==20.3.3
+  - numpy==1.19.2
 prefix: /Users/robvangastel/.conda/envs/rl
 
