@@ -1,4 +1,11 @@
-## TODO: Deep Q-learning Networks
+## Deep Q-learning Networks (WIP)
+Add a small section on function approximation
+
+### Algorithms
+
+- DQN
+- DQN with experienced replay
+- Duelling DQN
 
 ### Learning Goals
 

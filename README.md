@@ -1,5 +1,5 @@
 # reinforcement-learning-algorithms
-This repository contains code and material of different sources,
+This repository contains code and material from different sources,
 
 readings:
 * [Reinforcement Learning: An Introduction (2nd Edition)](http://incompleteideas.net/book/RLbook2018.pdf)
@@ -14,10 +14,10 @@ Implementations:
 * [Implementation of Reinforcement Learning Algorithms](https://github.com/dennybritz/reinforcement-learning)
 
 ## Install requirements
-The `requirements.txt` or conda environemnt `rl.yml` can be found in the root directory. For the installation of the OpenAI gym make sure to follow the [installation](https://github.com/openai/gym#installation) instructions.
+~~The `requirements.txt` or conda environemnt `rl.yml` can be found in the root directory.~~ (Should be converted to an install script). For the installation of the OpenAI gym make sure to follow the [installation](https://github.com/openai/gym#installation) instructions.
 
 ## Available Algorithms (WIP)
-A good global scope of different Reinforcement Learning algorithms can be found in this repository, [RL Taxonomy](https://github.com/bennylp/RL-Taxonomy).
+A good global scope of different Reinforcement Learning algorithms can be found in: [RL Taxonomy](https://github.com/bennylp/RL-Taxonomy).
 
 
 ### Dynamic Programming
@@ -26,7 +26,7 @@ A good global scope of different Reinforcement Learning algorithms can be found 
 - Policy iteration (Control problem)
 - Value iteration (Control problem)
 
-###  Temporal Difference (TD) and Q-Learning
+###  Temporal Difference (TD)
 - SARSA
 - Expected SARSA
 - Q-learning
@@ -35,13 +35,15 @@ A good global scope of different Reinforcement Learning algorithms can be found 
 - Vanilla Policy Gradient 
 - Monte Carlo Policy Gradient (REINFORCE)
 - Advantage Actor-Critic (A2C)
+- Proximal Policy Optimization (PPO)
 
 ### Deep Q-learning Networks
 - Deep Q-learning Networks (DQN)
 
 ### Meta-Reinforcement Learning
-- RL$^2$/Learning to Reinforcement Learn
-- MAML for Reinforcement Learning
+- RL$^2$
+- SNAIL
+- MAML
 - PEARL 
 
 

@@ -1,5 +1,9 @@
 ## TODO: Policy Gradient
 
+### Algorithms
+
+- Policy Gradient
+
 ### Learning Goals
 
 - Understand the difference between value-based and policy-based Reinforcement Learning
