@@ -1,17 +1,21 @@
+from lib.envs.gridworld import GridworldEnv
+import pprint
+import numpy as np
 import sys
 import os
 
 sys.path.append("../")
 sys.path.append(os.getcwd())
 
-import numpy as np
-import pprint
-from lib.envs.gridworld import GridworldEnv
+
+# TODO: Resolve gym of gridworld
 
 pp = pprint.PrettyPrinter(indent=2)
 env = GridworldEnv()
 
 # Taken from Policy Evaluation Exercise!
+
+
 def policy_eval(policy, env, discount_factor=1.0, theta=0.00001):
     """
     Evaluate a policy given an environment and a full description of the environment's dynamics.
@@ -40,7 +44,8 @@ def policy_eval(policy, env, discount_factor=1.0, theta=0.00001):
                 # For each action, look at the possible next states...
                 for prob, next_state, reward, done in env.P[s][a]:
                     # Calculate the expected value
-                    v += action_prob * prob * (reward + discount_factor * V[next_state])
+                    v += action_prob * prob * \
+                        (reward + discount_factor * V[next_state])
             # How much our value function changed (across any states)
             delta = max(delta, np.abs(v - V[s]))
             V[s] = v
@@ -134,5 +139,6 @@ print(v.reshape(env.shape))
 print("")
 
 # Test the value function
-expected_v = np.array([0, -1, -2, -3, -1, -2, -3, -2, -2, -3, -2, -1, -3, -2, -1, 0])
+expected_v = np.array([0, -1, -2, -3, -1, -2, -3, -
+                       2, -2, -3, -2, -1, -3, -2, -1, 0])
 np.testing.assert_array_almost_equal(v, expected_v, decimal=2)
