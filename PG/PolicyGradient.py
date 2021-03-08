@@ -2,36 +2,14 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.distributions.categorical import Categorical
+from torch.utils.tensorboard import SummaryWriter
 
+import argparse
 import numpy as np
+
 import gym
+from gym import wrappers
 from gym.spaces import Discrete, Box
-
-# class NeuralNetwork(nn.Module):
-#     def __init__(self, obs_dims, action_dims, hidden_size):
-#         super(NeuralNetwork, self).__init__()
-#         self.linear1 = nn.Linear(obs_space, hidden_size)
-# ...
-# class PolicyNetwork(nn.Module):
-#     def __init__(self, lr, input_dims,
-#                  n_actions):
-#         super(PolicyNetwork, self).__init__()
-#         self.fc1 = nn.Linear(*input_dims, 128)
-#         self.fc2 = nn.Linear(128, 128)
-#         self.fc3 = nn.Linear(128, n_actions)
-
-#         self.optimizer = optim.Adam(params=self.parameters(),
-#                                     lr=lr)
-
-#         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
-#         self.to(self.device)
-
-#     def forward(self, state):
-#         x = F.relu(self.fc1(state))
-#         x = F.relu(self.fc2(x))
-#         x = self.fc3(x)
-#         return x
-# TODO: Refactor to agent class?
 
 
 def mlp(sizes, activation=nn.Tanh, output_activation=nn.Identity):
@@ -78,7 +56,18 @@ class Agent:
         logp = self.get_policy(obs).log_prob(act)
         return -(logp * weights).mean()
 
-    def train_one_epoch(self, render=False, batch_size=5000):
+    def test(self, env, render=True):
+        obs, done, ep_reward = env.reset(), False, 0
+        while not done:
+            if render:
+                env.render()
+            action = self.get_action(torch.as_tensor(obs,
+                                                     dtype=torch.float32))
+            obs, reward, done, _ = env.step(action)
+            ep_reward += reward
+        return ep_reward
+
+    def train_one_epoch(self, batch_size=5000):
         # make some empty lists for logging.
         batch_obs = []          # for observations
         batch_acts = []         # for actions
@@ -96,10 +85,6 @@ class Agent:
 
         # collect experience by acting in the environment with current policy
         while True:
-
-            # rendering
-            if (not finished_rendering_this_epoch) and render:
-                env.render()
 
             # save obs
             batch_obs.append(obs.copy())
@@ -124,9 +109,6 @@ class Agent:
                 # reset episode-specific variables
                 obs, done, ep_rews = env.reset(), False, []
 
-                # won't render again this epoch
-                finished_rendering_this_epoch = True
-
                 # end experience loop if we have enough of it
                 if len(batch_obs) > batch_size:
                     break
@@ -143,18 +125,48 @@ class Agent:
         )
         batch_loss.backward()
         self.optimizer.step()
+
         return batch_loss, batch_rets, batch_lens
 
-    def train(self, epochs=50, batch_size=5000, render=False):
+    def train(self, writer, epochs=50, batch_size=5000):
         # training loop
         for i in range(epochs):
             batch_loss, batch_rets, batch_lens = self.train_one_epoch(
-                render=render, batch_size=batch_size)
+                batch_size=batch_size)
             print('epoch: %3d \t loss: %.3f \t return: %.3f \t ep_len: %.3f' %
                   (i, batch_loss, np.mean(batch_rets), np.mean(batch_lens)))
 
+            # ...log the running loss
+            writer.add_scalar('Training batch loss',
+                              batch_loss,
+                              i)
+            writer.add_scalar('Mean return',
+                              np.mean(batch_rets),
+                              i)
+            writer.add_scalar('Mean episode length',
+                              np.mean(batch_lens),
+                              i)
+
 
 if __name__ == "__main__":
-    env = gym.make("CartPole-v0")
-    agent = Agent(env, sizes=[128])
-    agent.train()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--env', type=str, default='CartPole-v0')
+    parser.add_argument('--render', type=bool, default=False)
+    parser.add_argument('--lr', type=float, default=1e-2)
+    parser.add_argument('--epochs', type=int, default=100)
+    parser.add_argument('--batch', type=int, default=5000)
+    args = parser.parse_args()
+
+    tbWriter = SummaryWriter(f'./runs/{args.env}')
+
+    env = gym.make(args.env)
+    agent = Agent(env, lr=args.lr, sizes=[128, 128])
+    agent.train(tbWriter, epochs=args.epochs,
+                batch_size=args.batch)
+
+    # TODO: Fix wrapper
+    # env = wrappers.Monitor(
+    #     env, f'./runs/{args.env}', force = True)
+    agent.test(env)
+
+    tbWriter.close()
