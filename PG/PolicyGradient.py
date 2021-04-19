@@ -157,10 +157,10 @@ if __name__ == "__main__":
     parser.add_argument('--batch', type=int, default=5000)
     args = parser.parse_args()
 
-    tbWriter = SummaryWriter(f'./runs/{args.env}')
+    tbWriter = SummaryWriter(f'./runs/{args.env}', flush_secs=1)
 
     env = gym.make(args.env)
-    agent = Agent(env, lr=args.lr, sizes=[128, 128])
+    agent = Agent(env, lr=args.lr, sizes=[128])
     agent.train(tbWriter, epochs=args.epochs,
                 batch_size=args.batch)
 

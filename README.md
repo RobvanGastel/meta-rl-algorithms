@@ -19,23 +19,17 @@ Implementations:
 ## Available Algorithms (WIP)
 A good global scope of different Reinforcement Learning algorithms can be found in: [RL Taxonomy](https://github.com/bennylp/RL-Taxonomy).
 
-
-### Dynamic Programming
-- General Policy Iteration (GPI)
-- Policy evaluation (Prediction problem)
-- Policy iteration (Control problem)
-- Value iteration (Control problem)
-
 ###  Temporal Difference (TD)
 - SARSA
 - Expected SARSA
 - Q-learning
 
 ### Policy Gradient 
-- Vanilla Policy Gradient 
-- Monte Carlo Policy Gradient (REINFORCE)
+- Natural Policy Gradient (NPG)
+- Monte Carlo Policy Gradient (REINFORCE/VPG)
 - Advantage Actor-Critic (A2C)
 - Proximal Policy Optimization (PPO)
+- Soft-Actor Critic (SAC)
 
 ### Deep Q-learning Networks
 - Deep Q-learning Networks (DQN)
