@@ -3,15 +3,9 @@ This repository contains code and material from different sources,
 
 readings:
 * [Reinforcement Learning: An Introduction (2nd Edition)](http://incompleteideas.net/book/RLbook2018.pdf)
-* [Lillian's blog posts](https://lilianweng.github.io/lil-log/)
-
-Lectures:
-* [David Silver's Reinforcement Learning Course](http://www0.cs.ucl.ac.uk/staff/d.silver/web/Teaching.html)
-* [John Schulman - Deep Reinforcement Learning (4 Lectures)](https://www.youtube.com/playlist?list=PLjKEIQlKCTZYN3CYBlj8r58SbNorobqcp)
 
 Implementations:
 * [OpenAI Spinning Up in Deep RL](https://spinningup.openai.com/en/latest/index.html)
-* [Implementation of Reinforcement Learning Algorithms](https://github.com/dennybritz/reinforcement-learning)
 
 ## Install requirements
 ~~The `requirements.txt` or conda environemnt `rl.yml` can be found in the root directory.~~ (Should be converted to an install script). For the installation of the OpenAI gym make sure to follow the [installation](https://github.com/openai/gym#installation) instructions.
@@ -19,17 +13,17 @@ Implementations:
 ## Available Algorithms (WIP)
 A good global scope of different Reinforcement Learning algorithms can be found in: [RL Taxonomy](https://github.com/bennylp/RL-Taxonomy).
 
-###  Temporal Difference (TD)
-- SARSA
-- Expected SARSA
-- Q-learning
-
 ### Policy Gradient 
 - Vanilla Policy Gradient (REINFORCE)
 - Actor-Critic Policy Gradient
 - Advantage Actor-Critic (A2C)
 - Proximal Policy Optimization (PPO)
 - Soft-Actor Critic (SAC)
+
+###  Temporal Difference (TD) methods
+- SARSA
+- Expected SARSA
+- Q-learning
 
 ### Deep Q-learning Networks
 - Deep Q-learning Networks (DQN)

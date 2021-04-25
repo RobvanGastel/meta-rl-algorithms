@@ -1,1 +1,3 @@
-## Temporal Difference (TD) methods 
+## Temporal Difference (TD) methods
+
+TODO: Refactor notebook
