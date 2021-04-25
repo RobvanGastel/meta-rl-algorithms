@@ -11,6 +11,9 @@ import gym
 from gym import wrappers
 from gym.spaces import Discrete, Box
 
+"""Policy Gradient implementation by OpenAI
+"""
+
 
 def mlp(sizes, activation=nn.Tanh, output_activation=nn.Identity):
     # Build a feedforward neural network.
@@ -164,9 +167,5 @@ if __name__ == "__main__":
     agent.train(tbWriter, epochs=args.epochs,
                 batch_size=args.batch)
 
-    # TODO: Fix wrapper
-    # env = wrappers.Monitor(
-    #     env, f'./runs/{args.env}', force = True)
     agent.test(env)
-
     tbWriter.close()

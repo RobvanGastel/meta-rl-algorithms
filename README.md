@@ -25,8 +25,8 @@ A good global scope of different Reinforcement Learning algorithms can be found 
 - Q-learning
 
 ### Policy Gradient 
-- Natural Policy Gradient (NPG)
-- Monte Carlo Policy Gradient (REINFORCE/VPG)
+- Vanilla Policy Gradient (REINFORCE)
+- Actor-Critic Policy Gradient
 - Advantage Actor-Critic (A2C)
 - Proximal Policy Optimization (PPO)
 - Soft-Actor Critic (SAC)
