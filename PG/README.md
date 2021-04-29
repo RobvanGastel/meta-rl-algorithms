@@ -148,6 +148,8 @@ $\qquad \text{  }$ which is a sum of all terms $\nabla \log \pi(a_t | s_t, \thet
 
 ---
 
+<br/>
+
 **References**
 - The [deepRL bootcamp lectures](https://www.youtube.com/watch?v=S_gwYj1Q-44) by Peter Abbeel
 - The [RLVS](https://rlvs.aniti.fr/) lectures by Olivier Sigaud
