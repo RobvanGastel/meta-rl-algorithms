@@ -3,20 +3,29 @@ import numpy as np
 from gridworld import GridworldEnv
 
 
+"""Original implementation by
+https://github.com/dennybritz/reinforcement-learning/blob/master/lib/envs/PolicyEvaluation.py
+"""
+
+
 env = GridworldEnv()
 
 
 def policy_evaluation(policy, env, discount_factor=1.0, theta=1e-3):
     """
-    Evaluate a policy given an environment and a full description of the environment's dynamics.
+    Iteratively evaluate a policy given an environment and a full 
+    description of the environment's dynamics.
 
     Args:
         policy: [S, A] shaped matrix representing the policy.
-        env: OpenAI env. env.P represents the transition probabilities of the environment.
-            env.P[s][a] is a list of transition tuples (prob, next_state, reward, done).
+        env: OpenAI env. env.P represents the transition probabilities
+        of the environment.
+            env.P[s][a] is a list of transition tuples (prob, next_state,
+            reward, done).
             env.nS is a number of states in the environment.
             env.nA is a number of actions in the environment.
-        theta: We stop evaluation once our value function change is less than theta for all states.
+        theta: We stop evaluation once our value function change is less
+        than theta for all states.
         discount_factor: Gamma discount factor.
 
     Returns:
@@ -31,18 +40,17 @@ def policy_evaluation(policy, env, discount_factor=1.0, theta=1e-3):
         for s in range(env.nS):
             v = copy.deepcopy(V[s])
             V_s = 0
-            for a in range(env.nA):
+            for a, action_prob in enumerate(policy[s]):
+                # TODO: Try frozenLake here as well?
+                # For each action, look at the possible next states...
+                for prob, next_state, reward, _ in env.P[s][a]:
+                    # Calculate the expected value. Ref: Sutton book eq. 4.6.
+                    V_s += action_prob * prob * \
+                        (reward + discount_factor * V[next_state])
 
-                # TODO: Check why this is different
-                # for a, action_prob in enumerate(policy[s]):
-                #     # For each action, look at the possible next states...
-                #     for prob, next_state, reward, done in env.P[s][a]:
-                #         # Calculate the expected value. Ref: Sutton book eq. 4.6.
-                #         v += action_prob * prob * \
-                #             (reward + discount_factor * V[next_state])
-
-                V_s += policy[s, a] * env.P[s][a][0][0] * \
-                    (env.P[s][a][0][2] + discount_factor * V[env.P[s][a][0][1]])
+                    # Or directly use the transition dynamics.
+                    # V_s += policy[s, a] * env.P[s][a][0][0] * \
+                    #     (env.P[s][a][0][2] + discount_factor * V[env.P[s][a][0][1]])
             V[s] = V_s
 
             delta = max(delta, np.abs(v-V[s]))
