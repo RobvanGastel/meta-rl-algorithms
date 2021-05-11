@@ -41,7 +41,6 @@ def policy_evaluation(policy, env, discount_factor=1.0, theta=1e-3):
             v = copy.deepcopy(V[s])
             V_s = 0
             for a, action_prob in enumerate(policy[s]):
-                # TODO: Try frozenLake here as well?
                 # For each action, look at the possible next states...
                 for prob, next_state, reward, _ in env.P[s][a]:
                     # Calculate the expected value. Ref: Sutton book eq. 4.6.
