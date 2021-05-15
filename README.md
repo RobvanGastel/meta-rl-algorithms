@@ -7,20 +7,24 @@ This repository contains implementation and write-up of several algorithms for t
 ## Available Algorithms (WIP)
 A good global scope of different Reinforcement Learning algorithms can be found in: [RL Taxonomy](https://github.com/bennylp/RL-Taxonomy).
 
-### Policy Gradient 
-- [x] Vanilla Policy Gradient (REINFORCE)
-- Actor-Critic Policy Gradient
-- Advantage Actor-Critic (A2C)
-- Proximal Policy Optimization (PPO)
-- Soft-Actor Critic (SAC)
+### Dynamic Programmign
+- [x] Policy Iteration
+- [x] Value Iteration
 
 ###  Temporal Difference (TD) methods
 - SARSA
 - Expected SARSA
 - Q-learning
+- TD(λ)
+
+### Policy Gradient 
+- [x] Vanilla Policy Gradient (REINFORCE)
+- Advantage Actor-Critic (A2C)
+- Proximal Policy Optimization (PPO)
+- Soft-Actor Critic (SAC)
 
 ### Deep Q-learning Networks
-- Deep Q-learning Networks (DQN)
+- [x] Deep Q-learning Networks (DQN)
 
 ### Meta-Reinforcement Learning
 - RL2

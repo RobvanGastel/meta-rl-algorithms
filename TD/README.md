@@ -1,3 +1,5 @@
 ## Temporal Difference (TD) methods
 
-TODO: Refactor notebook
+Currently only implements Tabular Q-learning on the Frozenlake environment.
+
+(WIP) To be implemented SARSA, Expected SARSA, TD(λ)
