@@ -12,9 +12,9 @@ A good global scope of different Reinforcement Learning algorithms can be found 
 - [x] Value Iteration
 
 ###  Temporal Difference (TD) methods
+- [x] Q-learning
 - SARSA
 - Expected SARSA
-- Q-learning
 - TD(λ)
 
 ### Policy Gradient 
