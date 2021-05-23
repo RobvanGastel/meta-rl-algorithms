@@ -22,7 +22,6 @@ A good global scope of different Reinforcement Learning algorithms can be found 
 - [x] Vanilla Policy Gradient (REINFORCE)
 - Advantage Actor-Critic (A2C)
 - Proximal Policy Optimization (PPO)
-- Soft-Actor Critic (SAC)
 
 ### Deep Q-learning Networks
 - [x] Deep Q-learning Networks (DQN)

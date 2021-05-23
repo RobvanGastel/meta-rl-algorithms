@@ -1,6 +1,6 @@
 ## Deep Q-learning Networks
 
-This directory contains several implementations of DQN that utilize different techniques to improve performance based on several papers.
+Implementation of DQN and several techniques to improve convergence and performance, like experience replay, double QDN and Duelling DQN. Furthermore, evaluated these agents on the CartPole environment. 
 
 **references**
 - [Deep Reinforcement Learning with Double Q-learning](https://arxiv.org/abs/1509.06461)
