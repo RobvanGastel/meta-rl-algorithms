@@ -7,15 +7,16 @@ This repository contains implementation and write-up of several algorithms for t
 ## Available Algorithms (WIP)
 A good global scope of different Reinforcement Learning algorithms can be found in: [RL Taxonomy](https://github.com/bennylp/RL-Taxonomy).
 
-### Dynamic Programmign
+### Dynamic Programming
 - [x] Policy Iteration
 - [x] Value Iteration
 
 ###  Temporal Difference (TD) methods
-- [x] Q-learning
-- SARSA
-- Expected SARSA
+- [x] (Double) Q-learning
+- [x] Sarsa
+- [x] Expected Sarsa
 - TD(λ)
+- n-step TD
 
 ### Policy Gradient 
 - [x] Vanilla Policy Gradient (REINFORCE)
@@ -25,6 +26,9 @@ A good global scope of different Reinforcement Learning algorithms can be found 
 
 ### Deep Q-learning Networks
 - [x] Deep Q-learning Networks (DQN)
+
+### Imitation Learning
+- DAgger
 
 ### Meta-Reinforcement Learning
 - RL2
