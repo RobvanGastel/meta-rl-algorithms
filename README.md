@@ -2,7 +2,7 @@
 This repository contains implementation and write-up of several algorithms for testing purposes.
 
 ## Install requirements
-~~The `requirements.txt` or conda environemnt `rl.yml` can be found in the root directory.~~ (Should be converted to an install script). For the installation of the OpenAI gym make sure to follow the [installation](https://github.com/openai/gym#installation) instructions.
+The `requirements.txt` or conda environemnt `rl.yml` can be found in the root directory. For the installation of the OpenAI gym make sure to follow the [installation](https://github.com/openai/gym#installation) instructions.
 
 ## Available Algorithms (WIP)
 A good global scope of different Reinforcement Learning algorithms can be found in: [RL Taxonomy](https://github.com/bennylp/RL-Taxonomy).
@@ -15,25 +15,21 @@ A good global scope of different Reinforcement Learning algorithms can be found 
 - [x] (Double) Q-learning
 - [x] Sarsa
 - [x] Expected Sarsa
-- TD(λ)
-- n-step TD
+- [ ] ~~TD(λ)~~
+- [ ] ~~n-step TD~~
 
 ### Policy Gradient 
 - [x] Vanilla Policy Gradient (REINFORCE)
-- Advantage Actor-Critic (A2C)
-- Proximal Policy Optimization (PPO)
+- [ ] Advantage Actor-Critic (A2C)
+- [ ] Proximal Policy Optimization (PPO)
 
 ### Deep Q-learning Networks
 - [x] Deep Q-learning Networks (DQN)
 
-### Imitation Learning
-- DAgger
-
 ### Meta-Reinforcement Learning
-- RL2
-- SNAIL
-- MAML
-- PEARL 
+- [ ] RL2
+- [ ] MAML
+- [ ] PEARL 
 
 **references**
 * [Reinforcement Learning: An Introduction (2nd Edition)](http://incompleteideas.net/book/RLbook2018.pdf)
