@@ -66,7 +66,10 @@ class KrazyWorld:
 
     def step(self, action, render=False):
         self.curr_step += 1
+        # print("curr_step", self.curr_step)
         obs, rew, done, info = self._env.step(action, render=render)
+
+        # print(done, self.curr_step == self.max_ep_len)
 
         # Add time-limit
         done = True if self.curr_step == self.max_ep_len else done
