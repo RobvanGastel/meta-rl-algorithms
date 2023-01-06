@@ -1,12 +1,17 @@
 import torch
 import argparse
 
+from utils.logger import Logger
 from algos.rl2_ppo.agent import PPO
 from algos.rl2_ppo.buffer import RolloutBuffer
 from envs.krazy_world.gym_wrapper import KrazyWorld
 
 
 def main(args):
+
+    Logger("rl2_ppo", "logs")
+
+    Logger.get().info("Logger set. Initializing training...")
 
     ### Config
     # TODO: Proper config

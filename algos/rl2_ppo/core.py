@@ -125,14 +125,12 @@ class ActorCritic(nn.Module):
         rnn_input = torch.cat([obs_enc, prev_action, prev_reward], dim=-1)
 
         if training:
-            # TODO: Alternative is spliting up the entire batch of experience
-            # in sequences of a given length.
             # Input rnn: (batch size, sequence length, features)
-            # rnn_input = rnn_input.unsqueeze(0)
             rnn_out, rnn_state_out = self.rnn(rnn_input, rnn_state)
-            # rnn_out = rnn_out.squeeze(0)
         else:
             # Input rnn: (1, 1, features)
+            # TODO: len(rnn_input) == 2 do the unsqueezing.
+
             rnn_input = rnn_input.unsqueeze(1)
             rnn_out, rnn_state_out = self.rnn(rnn_input, rnn_state)
             rnn_out = rnn_out.squeeze(1)
@@ -154,7 +152,6 @@ class ActorCritic(nn.Module):
         logp_a = None
         if action is not None:
             # TODO: Ugly fix to indice like this for discrete policy
-            # print(action[:, :, 0].shape)
             action = action[:, :, 0]
             logp_a = pi.log_prob(action)
         return pi, logp_a, rnn_state_out
@@ -167,9 +164,7 @@ class ActorCritic(nn.Module):
         )
 
         value_logits = self.critic_network(rnn_out)
-        # print(value_logits.shape)
         value_logits = value_logits.squeeze(-1)
-        # print(value_logits.shape)
         return value_logits, rnn_state_out
 
     def step(self, obs, prev_action, prev_reward, rnn_state):
