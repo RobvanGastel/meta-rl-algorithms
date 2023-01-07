@@ -31,7 +31,8 @@ class PPO(nn.Module):
         self.value_coeff = value_coeff
         self.entropy_coeff = entropy_coeff
 
-        self.actor_critic = ActorCritic(obs_dim, action_dim, device, **ac_kwargs)
+        self.actor_critic = ActorCritic(
+            obs_dim, action_dim, device, **ac_kwargs)
 
         self.optimizer = torch.optim.Adam(
             self.actor_critic.parameters(), lr=lr, eps=1e-5
@@ -54,9 +55,11 @@ class PPO(nn.Module):
     ):
 
         writer = Logger.get().writter
-        pi_info = dict(kl=torch.tensor(0), ent=torch.tensor(0), cf=torch.tensor(0))
+        pi_info = dict(kl=torch.tensor(
+            0), ent=torch.tensor(0), cf=torch.tensor(0))
 
-        zero_rnn_state = self.actor_critic.initialize_state(batch_size=batch_size)
+        zero_rnn_state = self.actor_critic.initialize_state(
+            batch_size=batch_size)
 
         for epoch in range(update_epochs):
 
@@ -73,21 +76,25 @@ class PPO(nn.Module):
 
             self.optimizer.zero_grad()
             loss.backward()
-            nn.utils.clip_grad_norm_(self.actor_critic.parameters(), self.max_grad_norm)
+            nn.utils.clip_grad_norm_(
+                self.actor_critic.parameters(), self.max_grad_norm)
             self.optimizer.step()
 
             if target_kl and pi_info["kl"] > 1.5 * target_kl:
                 break
 
         # Logging of the agent variables
-        y_pred, y_true = batch["value"].cpu().numpy(), batch["return"].cpu().numpy()
+        y_pred, y_true = batch["value"].cpu(
+        ).numpy(), batch["return"].cpu().numpy()
         var_y = np.var(y_true)
-        explained_var = np.nan if var_y == 0 else 1 - np.var(y_true - y_pred) / var_y
+        explained_var = np.nan if var_y == 0 else 1 - \
+            np.var(y_true - y_pred) / var_y
 
         writer.add_scalar("PPO/explained_variance", explained_var, global_step)
         writer.add_scalar("PPO/value_loss", v_loss.item(), global_step)
         writer.add_scalar("PPO/policy_loss", pi_loss.item(), global_step)
-        writer.add_scalar("PPOAgent/entropy", pi_info["ent"].item(), global_step)
+        writer.add_scalar("PPOAgent/entropy",
+                          pi_info["ent"].item(), global_step)
         writer.add_scalar("PPO/approx_kl", pi_info["kl"].item(), global_step)
         writer.add_scalar("PPO/clip_frac", pi_info["cf"].item(), global_step)
 
@@ -130,7 +137,8 @@ class PPO(nn.Module):
         b_prev_rew = b_prev_rew.unsqueeze(-1)
 
         # Normalize the advtange, done per batch to not affect the mini-batch too much
-        b_advantage = (b_advantage - b_advantage.mean()) / (b_advantage.std() + 1e-8)
+        b_advantage = (b_advantage - b_advantage.mean()) / \
+            (b_advantage.std() + 1e-8)
 
         pi, log_prob, _ = self.actor_critic.pi(
             b_obs, b_prev_act, b_prev_rew, rnn_state, action=b_act, training=True
@@ -140,14 +148,16 @@ class PPO(nn.Module):
 
         # Policy loss
         clip_advantage = (
-            torch.clamp(ratio, 1 - self.clip_ratio, 1 + self.clip_ratio) * b_advantage
+            torch.clamp(ratio, 1 - self.clip_ratio, 1 +
+                        self.clip_ratio) * b_advantage
         )
         loss_pi = -torch.min(ratio * b_advantage, clip_advantage).mean()
 
         # Debug info
         with torch.no_grad():
             approx_kl = ((ratio - 1) - log_ratio).mean()
-            clipped = ratio.gt(1 + self.clip_ratio) | ratio.lt(1 - self.clip_ratio)
+            clipped = ratio.gt(
+                1 + self.clip_ratio) | ratio.lt(1 - self.clip_ratio)
             clip_frac = clipped.float().mean()
             ent = pi.entropy().mean()
 

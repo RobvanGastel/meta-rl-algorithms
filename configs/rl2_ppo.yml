@@ -1,0 +1,15 @@
+# experiment
+device: cuda
+seed: 42
+epochs: 1000
+
+# agent
+update_epochs: 15
+update_every_n: 5
+obs_enc_dim: 512
+rnn_state_size: 128
+actor_hidden_sizes: [128, 128]
+critic_hidden_sizes: [128, 128]
+
+# environment
+max_ep_len: 100

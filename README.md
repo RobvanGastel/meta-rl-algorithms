@@ -1,44 +1,36 @@
 # Meta-Reinforcement Learning Algorithms
-This repository contains implementation and write-up of several algorithms for testing purposes.
+A PyTorch implementation of meta-reinforcement learning algorithms, RL$^2$ PPO, SNAIL, and VariBAD. 
 
-## Install requirements
-~~The `requirements.txt` or conda environemnt `rl.yml` can be found in the root directory.~~ (Should be converted to an install script). For the installation of the OpenAI gym make sure to follow the [installation](https://github.com/openai/gym#installation) instructions.
+TODO
 
-## Available Algorithms (WIP)
-<<<<<<< HEAD
-A good global scope of different Reinforcement Learning algorithms can be found in: [RL Taxonomy](https://github.com/bennylp/RL-Taxonomy).
+## Setup
+Install the following packages.
 
-### Dynamic Programming
-- [x] Policy Iteration
-- [x] Value Iteration
+```bash
+# using conda,
+conda create --name metarl --file requirements.txt
+# Or using pip,
+pip install requirements.txt
+```
 
-###  Temporal Difference (TD) methods
-- [x] (Double) Q-learning
-- [x] Sarsa
-- [x] Expected Sarsa
-- TD(λ)
-- n-step TD
+## Usage
 
-### Policy Gradient 
-- [x] Vanilla Policy Gradient (REINFORCE)
-- Advantage Actor-Critic (A2C)
-- Proximal Policy Optimization (PPO)
+TODO
 
-### Deep Q-learning Networks
-- [x] Deep Q-learning Networks (DQN)
-=======
-### Policy Gradient 
-- [ ] RL2 Proximal Policy Optimization (PPO)
->>>>>>> 68d3fde... Refactor repository
+## Algorithms
 
-### Imitation Learning
-- DAgger
+- [x] RL$^2$ Proximal Policy Optimization (PPO)
+- [ ] VariBAD
+- [ ] SNAIL
 
-### Meta-Reinforcement Learning
-- RL2
-- SNAIL
-- MAML
-- PEARL 
 
-**references**
-* Achiam, J. (2018). Spinning Up in Deep Reinforcement Learning. https://spinningup.openai.com/en/latest/index.html.
+## Results
+
+TODO
+
+## References
+- Achiam, J. (2018). Spinning Up in Deep Reinforcement Learning. https://spinningup.openai.com/en/latest/index.html
+- Wang, J. X., Kurth-Nelson, Z., Tirumala, D., Soyer, H., Leibo, J. Z., Munos, R., Blundell, C., Kumaran, D., & Botvinick, M. (2017). Learning to reinforcement learn. ArXiv:1611.05763 [Cs, Stat]. http://arxiv.org/abs/1611.05763
+- Duan, Y., Schulman, J., Chen, X., Bartlett, P. L., Sutskever, I., & Abbeel, P. (2016). RL$^2$: Fast Reinforcement Learning via Slow Reinforcement Learning (arXiv:1611.02779). arXiv. https://doi.org/10.48550/arXiv.1611.02779
+- Zintgraf, L., Shiarlis, K., Igl, M., Schulze, S., Gal, Y., Hofmann, K., & Whiteson, S. (2020). VariBAD: A Very Good Method for Bayes-Adaptive Deep RL via Meta-Learning (arXiv:1910.08348). arXiv. https://doi.org/10.48550/arXiv.1910.08348
+- Mishra, N., Rohaninejad, M., Chen, X., & Abbeel, P. (2018). A Simple Neural Attentive Meta-Learner (arXiv:1707.03141). arXiv. http://arxiv.org/abs/1707.03141

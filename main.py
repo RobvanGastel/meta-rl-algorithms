@@ -1,5 +1,7 @@
-import torch
+import yaml
 import argparse
+
+import torch
 
 from utils.logger import Logger
 from algos.rl2_ppo.agent import PPO
@@ -7,15 +9,10 @@ from algos.rl2_ppo.buffer import RolloutBuffer
 from envs.krazy_world.gym_wrapper import KrazyWorld
 
 
-def main(args):
+def main(config):
+    Logger.get().info(f"Logger set. Initializing training {config['name']}")
 
-    Logger("rl2_ppo", "logs")
-
-    Logger.get().info("Logger set. Initializing training...")
-
-    ### Config
-    # TODO: Proper config
-    hidden_size = 128
+    # Config
     epochs = 1000
     update_epochs = 15
     update_every_n = 5
@@ -45,7 +42,7 @@ def main(args):
         device=device,
     )
 
-    ### RL^2 variables
+    # RL^2 variables
     rnn_state = agent.actor_critic.initialize_state(batch_size=1)
     prev_action = torch.tensor(0).to(device).unsqueeze(0)
     prev_rew = torch.tensor(0).to(device).view(1, 1)
@@ -63,7 +60,8 @@ def main(args):
             )
             next_obs, rew, done, _ = env.step(action)
 
-            buffer.store(obs, action, rew, prev_action, prev_rew, done, value, log_prob)
+            buffer.store(obs, action, rew, prev_action,
+                         prev_rew, done, value, log_prob)
 
             # Update the observation
             obs = next_obs
@@ -77,7 +75,8 @@ def main(args):
 
             if done:
                 obs = torch.tensor(obs).to(device).float().unsqueeze(0)
-                _, value, _, _ = agent.act(obs, prev_action, prev_rew, rnn_state)
+                _, value, _, _ = agent.act(
+                    obs, prev_action, prev_rew, rnn_state)
 
                 # TODO: Correctly, input last_termination/done.
                 buffer.finish_path(value, done)
@@ -94,6 +93,15 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("-n", "--name", type=str)
+    parser.add_argument('-c', '--config',  type=str,
+                        default="configs/rl2_ppo.yaml")
     args = parser.parse_args()
 
-    main(args)
+    with open(args.config, 'r', encoding="utf-8") as f:
+        config = yaml.load(f, Loader=yaml.FullLoader)
+
+    # Initialize logger
+    Logger(args.name, "logs")
+
+    main(config)
