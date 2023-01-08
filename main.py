@@ -2,6 +2,7 @@ import yaml
 import argparse
 
 import torch
+from gymnasium.wrappers import RecordEpisodeStatistics
 
 from utils.logger import Logger
 from algos.rl2_ppo.agent import PPO
@@ -13,11 +14,6 @@ def main(config):
     Logger.get().info(f"Logger set. Initializing training {config['name']}")
 
     # Config
-    epochs = 1000
-    update_epochs = 15
-    update_every_n = 5
-    max_ep_len = 100
-
     ac_kwargs = {
         "obs_enc_dim": 512,
         "rnn_state_size": 128,
@@ -26,9 +22,10 @@ def main(config):
     }
     ###
 
-    device = torch.device("cuda:2")
+    device = torch.device(config["device"])
 
-    env = KrazyWorld(seed=1, max_ep_len=max_ep_len)
+    env = RecordEpisodeStatistics(KrazyWorld(seed=1))
+
     agent = PPO(
         obs_dim=env.observation_space.shape[0],
         action_dim=env.action_space.n,
@@ -36,7 +33,7 @@ def main(config):
         device=device,
     )
     buffer = RolloutBuffer(
-        size=max_ep_len,
+        size=config["max_episode_steps"],
         state_dim=env.observation_space.shape[0],
         action_dim=env.action_space.n,
         device=device,
@@ -49,7 +46,7 @@ def main(config):
     ###
 
     # Number of episodes
-    for epoch in range(epochs):
+    for epoch in range(config["epochs"]):
         obs, ep_ret, ep_len = env.reset(), 0, 0
         done = False
 
@@ -58,10 +55,11 @@ def main(config):
             action, value, log_prob, rnn_state = agent.act(
                 obs, prev_action, prev_rew, rnn_state
             )
-            next_obs, rew, done, _ = env.step(action)
+            next_obs, rew, termination, truncated, info = env.step(action)
 
-            buffer.store(obs, action, rew, prev_action,
-                         prev_rew, done, value, log_prob)
+            buffer.store(
+                obs, action, rew, prev_action, prev_rew, termination, value, log_prob
+            )
 
             # Update the observation
             obs = next_obs
@@ -73,32 +71,44 @@ def main(config):
             ep_ret += rew
             ep_len += 1
 
-            if done:
+            if termination or truncated:
                 obs = torch.tensor(obs).to(device).float().unsqueeze(0)
-                _, value, _, _ = agent.act(
-                    obs, prev_action, prev_rew, rnn_state)
 
-                # TODO: Correctly, input last_termination/done.
+                # The "value" argument should be 0 if the trajectory ended
+                # because the agent reached a terminal state (died).
+                if truncated:
+                    value = torch.tensor(0.0)
+                else:
+                    # Otherwise it should be V(s_t), the value function estimated for the
+                    # last state. This allows us to bootstrap the reward-to-go calculation
+                    # to account. for timesteps beyond the arbitrary episode horizon.
+                    _, value, _, _ = agent.act(obs, prev_action, prev_rew, rnn_state)
+
                 buffer.finish_path(value, done)
 
                 # Update every n episodes
-                if epoch % update_every_n == 0 and epoch != 0:
+                if epoch % config["update_every_n"] == 0 and epoch != 0:
                     batch, batch_size = buffer.get()
-                    agent.optimize(batch, update_epochs, batch_size)
+                    agent.optimize(batch, config["update_epochs"], batch_size)
                     buffer.reset()
 
-                print(f"ep_ret: {ep_ret} and ep_len: {ep_len}")
+                print(
+                    f"time elapsed: {info['episode']['t']} "
+                    f"episode return: {info['episode']['r']} "
+                    f" and episode length: {info['episode']['l']}",
+                    flush=True,
+                )
+
                 ep_ret, ep_len = 0, 0
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--name", type=str)
-    parser.add_argument('-c', '--config',  type=str,
-                        default="configs/rl2_ppo.yaml")
+    parser.add_argument("-c", "--config", type=str, default="configs/rl2_ppo.yaml")
     args = parser.parse_args()
 
-    with open(args.config, 'r', encoding="utf-8") as f:
+    with open(args.config, "r", encoding="utf-8") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
 
     # Initialize logger

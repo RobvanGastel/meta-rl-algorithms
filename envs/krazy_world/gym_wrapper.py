@@ -1,17 +1,17 @@
 import numpy as np
-from gym import spaces
+import gymnasium as gym
+from gymnasium import spaces
+
 
 from envs.krazy_world.krazy_world import KrazyGridWorld
 
-# TODO: Update the KrazyWorld wrapper for the newest version of Gymnasium
 
-
-class KrazyWorld:
-    """KrazyWorld Gym wrapper"""
+class KrazyWorld(gym.Env):
+    """KrazyWorld Gymnasium wrapper"""
 
     metadata = {"render.modes": ["human"]}
 
-    def __init__(self, seed, task_seed=None, max_ep_len=100, use_local_obs=True):
+    def __init__(self, seed, task_seed=None, use_local_obs=True, max_episode_steps=100):
 
         # The settings except the seeds are taken from the E-MAML
         # implementation of krazyworld.
@@ -34,12 +34,14 @@ class KrazyWorld:
             ice_sq_perc=0.05,
         )
 
+        # Required environmental attributes
         self._observation_space = spaces.Box(0, 9, shape=(100,), dtype=np.int32)
         self._action_space = spaces.Discrete(4)
-
-        self.curr_step = 0
         self.reward_range = (0, 3)
-        self.max_ep_len = max_ep_len
+
+        # Own implementation for the TimeLimit wrapper to pass truncation
+        self.current_step = 0
+        self.max_episode_steps = max_episode_steps
 
     @property
     def observation_space(self):
@@ -51,29 +53,31 @@ class KrazyWorld:
 
     def reset(
         self,
-        reset_board=False,
-        reset_colors=False,
-        reset_agent_start_pos=False,
-        reset_dynamics=False,
+        seed=None,
+        options={
+            "reset_board": False,
+            "reset_colors": False,
+            "reset_agent_start_pos": False,
+            "reset_dynamics": False,
+        },
     ):
-        self.curr_step = 0
+        super().reset(seed=seed)
+        self.current_step = 0
+
         return self._env.reset(
-            reset_board=reset_board,
-            reset_colors=reset_colors,
-            reset_agent_start_pos=reset_agent_start_pos,
-            reset_dynamics=reset_dynamics,
+            reset_board=options["reset_board"],
+            reset_colors=options["reset_colors"],
+            reset_agent_start_pos=options["reset_agent_start_pos"],
+            reset_dynamics=options["reset_dynamics"],
         )
 
     def step(self, action, render=False):
-        self.curr_step += 1
-        # print("curr_step", self.curr_step)
-        obs, rew, done, info = self._env.step(action, render=render)
+        obs, rew, terminated, info = self._env.step(action, render=render)
 
-        # print(done, self.curr_step == self.max_ep_len)
+        self.current_step += 1
+        truncated = self.current_step == self.max_episode_steps
 
-        # Add time-limit
-        done = True if self.curr_step == self.max_ep_len else done
-        return obs, rew, done, info
+        return obs, rew, terminated, truncated, info
 
     def render(self):
         self._env.render()

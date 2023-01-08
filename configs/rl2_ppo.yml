@@ -12,4 +12,4 @@ actor_hidden_sizes: [128, 128]
 critic_hidden_sizes: [128, 128]
 
 # environment
-max_ep_len: 100
+max_episode_steps: 100

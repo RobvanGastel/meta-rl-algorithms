@@ -328,6 +328,7 @@ class KrazyGridWorld:
 
         self.reset_task()
 
+        # deprecated due to gymnasium
         self.simple_image_viewer = None
         self.last_im_obs = None
 
@@ -467,10 +468,11 @@ class KrazyGridWorld:
         return False
 
     def render(self):
-        if self.simple_image_viewer is None:
-            from gym.envs.classic_control.rendering import SimpleImageViewer
+        # if self.simple_image_viewer is None:
+        # deprecated due to gymnasium
+        # from gym.envs.classic_control.rendering import SimpleImageViewer
+        # self.simple_image_viewer = SimpleImageViewer()
 
-            self.simple_image_viewer = SimpleImageViewer()
         im_obs = self.get_img_obs(render_global_obs=True)
         self.simple_image_viewer.imshow(im_obs)
         time.sleep(0.075)
@@ -604,7 +606,7 @@ def run_grid():
         energy_replenish=8,
         num_transporters=1,
         ice_sq_perc=0.05,
-        max_ep_len=100,
+        max_timesteps=100,
     )
 
     for i in range(1000):

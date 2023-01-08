@@ -1,12 +1,6 @@
-name: rl
-channels:
-  - defaults
-dependencies:
-  - matplotlib==3.3.3
-  - pandas==1.2.1
-  - gym==0.17.2
-  - pip==20.3.3
-  - numpy==1.19.2
-  - torch
-prefix: /Users/robvangastel/.conda/envs/rl
-
+pyyaml==6.0.0
+torch==1.13.1
+torchaudio==0.13.1
+torchvision==0.14.1
+tensorboard==1.15.0
+gymnasium==0.27.0
