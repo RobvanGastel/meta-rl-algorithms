@@ -105,7 +105,7 @@ class ActorCritic(nn.Module):
         ).to(device)
 
     def _one_hot(self, act):
-        return torch.eye(self.action_dim)[act.long(), :].to(self.device)
+        return torch.eye(self.action_dim).to(self.device)[act.long(), :]
 
     def initialize_state(self, batch_size):
         return (

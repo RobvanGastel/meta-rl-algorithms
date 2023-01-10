@@ -16,7 +16,7 @@ class PPO(nn.Module):
         device,
         seed=0,
         clip_ratio=0.2,
-        entropy_coeff=0.1,
+        entropy_coeff=0.0,
         value_coeff=0.5,
         max_grad_norm=0.5,
         lr=3e-4,
@@ -48,10 +48,7 @@ class PPO(nn.Module):
         global_step,
         target_kl=None,
     ):
-
-        writer = Logger.get().writter
         pi_info = dict(kl=torch.tensor(0), ent=torch.tensor(0), cf=torch.tensor(0))
-
         zero_rnn_state = self.actor_critic.initialize_state(batch_size=batch_size)
 
         for _ in range(update_epochs):
@@ -73,6 +70,7 @@ class PPO(nn.Module):
             self.optimizer.step()
 
             if target_kl and pi_info["kl"] > 1.5 * target_kl:
+                print(f"target kl reached {pi_info['kl']}")
                 break
 
         # Logging of the agent variables
@@ -80,6 +78,7 @@ class PPO(nn.Module):
         var_y = np.var(y_true)
         explained_var = np.nan if var_y == 0 else 1 - np.var(y_true - y_pred) / var_y
 
+        writer = Logger.get().writer
         writer.add_scalar("PPO/explained_variance", explained_var, global_step)
         writer.add_scalar("PPO/value_loss", v_loss.item(), global_step)
         writer.add_scalar("PPO/policy_loss", pi_loss.item(), global_step)
@@ -88,13 +87,13 @@ class PPO(nn.Module):
         writer.add_scalar("PPO/clip_frac", pi_info["cf"].item(), global_step)
 
     def _compute_value_loss(self, batch, rnn_state):
-        b_obs, b_return, b_value, b_prev_act, b_prev_rew = (
+        b_obs, b_return, b_prev_act, b_prev_rew = (
             batch["obs"],
-            batch["value"],
             batch["return"],
             batch["prev_action"],
             batch["prev_reward"],
         )
+        b_value = batch["value"]
         b_prev_rew = b_prev_rew.unsqueeze(-1)
 
         # Value loss
@@ -131,8 +130,7 @@ class PPO(nn.Module):
         pi, log_prob, _ = self.actor_critic.pi(
             b_obs, b_prev_act, b_prev_rew, rnn_state, action=b_act, training=True
         )
-        log_ratio = log_prob - b_log_prob
-        ratio = log_ratio.exp()
+        ratio = torch.exp(log_prob - b_log_prob)
 
         # Policy loss
         clip_advantage = (
@@ -142,7 +140,7 @@ class PPO(nn.Module):
 
         # Debug info
         with torch.no_grad():
-            approx_kl = ((ratio - 1) - log_ratio).mean()
+            approx_kl = (b_log_prob - log_prob).mean()
             clipped = ratio.gt(1 + self.clip_ratio) | ratio.lt(1 - self.clip_ratio)
             clip_frac = clipped.float().mean()
             ent = pi.entropy().mean()

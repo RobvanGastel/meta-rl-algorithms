@@ -24,7 +24,7 @@ def main(config):
 
     device = torch.device(config["device"])
 
-    env = RecordEpisodeStatistics(KrazyWorld(seed=1))
+    env = KrazyWorld(seed=20, task_seed=0)
 
     agent = PPO(
         obs_dim=env.observation_space.shape[0],
@@ -46,11 +46,13 @@ def main(config):
     ###
 
     # Number of episodes
+    global_step = 0
     for epoch in range(config["epochs"]):
-        obs, ep_ret, ep_len = env.reset(), 0, 0
-        done = False
+        obs, _ = env.reset()
+        ep_len, ep_rew = 0, 0
+        termination = False
 
-        while not done:
+        while not termination:
             obs = torch.tensor(obs).to(device).float().unsqueeze(0)
             action, value, log_prob, rnn_state = agent.act(
                 obs, prev_action, prev_rew, rnn_state
@@ -64,12 +66,12 @@ def main(config):
             # Update the observation
             obs = next_obs
 
+            ep_len += 1
+            ep_rew += rew
+
             # Set previous action and reward tensors
             prev_action = action.detach()
             prev_rew = torch.tensor(rew).to(device).view(1, 1)
-
-            ep_ret += rew
-            ep_len += 1
 
             if termination or truncated:
                 obs = torch.tensor(obs).to(device).float().unsqueeze(0)
@@ -84,22 +86,25 @@ def main(config):
                     # to account. for timesteps beyond the arbitrary episode horizon.
                     _, value, _, _ = agent.act(obs, prev_action, prev_rew, rnn_state)
 
-                buffer.finish_path(value, done)
+                buffer.finish_path(value, termination)
 
                 # Update every n episodes
                 if epoch % config["update_every_n"] == 0 and epoch != 0:
                     batch, batch_size = buffer.get()
-                    agent.optimize(batch, config["update_epochs"], batch_size)
+                    print(f"update with batch size {batch_size}")
+                    agent.optimize(
+                        batch, config["update_epochs"], batch_size, global_step
+                    )
                     buffer.reset()
 
-                print(
-                    f"time elapsed: {info['episode']['t']} "
-                    f"episode return: {info['episode']['r']} "
-                    f" and episode length: {info['episode']['l']}",
-                    flush=True,
-                )
-
-                ep_ret, ep_len = 0, 0
+                    # f"time elapsed: {info['episode']['t']} "
+                    print(
+                        f"epoch/episode #: {epoch} "
+                        f"episode return: {ep_rew} "
+                        f" and episode length: {ep_len}",
+                        flush=True,
+                    )
+            global_step += 1
 
 
 if __name__ == "__main__":
@@ -110,7 +115,7 @@ if __name__ == "__main__":
 
     with open(args.config, "r", encoding="utf-8") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
-
+    config["name"] = args.name
     # Initialize logger
     Logger(args.name, "logs")
 

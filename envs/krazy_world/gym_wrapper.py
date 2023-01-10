@@ -54,25 +54,21 @@ class KrazyWorld(gym.Env):
     def reset(
         self,
         seed=None,
-        options={
-            "reset_board": False,
-            "reset_colors": False,
-            "reset_agent_start_pos": False,
-            "reset_dynamics": False,
-        },
+        options=None,
     ):
         super().reset(seed=seed)
         self.current_step = 0
 
-        return self._env.reset(
-            reset_board=options["reset_board"],
-            reset_colors=options["reset_colors"],
-            reset_agent_start_pos=options["reset_agent_start_pos"],
-            reset_dynamics=options["reset_dynamics"],
-        )
+        options = {
+            "reset_board": False,
+            "reset_colors": False,
+            "reset_agent_start_pos": False,
+            "reset_dynamics": False,
+        }
+        return self._env.reset(*options), {}
 
-    def step(self, action, render=False):
-        obs, rew, terminated, info = self._env.step(action, render=render)
+    def step(self, action):
+        obs, rew, terminated, info = self._env.step(action, render=False)
 
         self.current_step += 1
         truncated = self.current_step == self.max_episode_steps

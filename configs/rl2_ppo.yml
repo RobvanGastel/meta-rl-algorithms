@@ -1,7 +1,8 @@
 # experiment
 device: cuda
 seed: 42
-epochs: 1000
+meta_epochs: 1000
+episodes: 20
 
 # agent
 update_epochs: 15
