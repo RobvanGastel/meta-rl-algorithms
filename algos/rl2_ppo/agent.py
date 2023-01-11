@@ -10,31 +10,32 @@ from algos.rl2_ppo.core import ActorCritic
 class PPO(nn.Module):
     def __init__(
         self,
+        config,
         obs_dim,
         action_dim,
         ac_kwargs,
         device,
         seed=0,
+        lr=3e-4,
         clip_ratio=0.2,
-        entropy_coeff=0.0,
+        entropy_coeff=0.1,
         value_coeff=0.5,
         max_grad_norm=0.5,
-        lr=3e-4,
     ):
         super().__init__()
         torch.manual_seed(seed)
         self.device = device
 
         # Optimize variables
-        self.clip_ratio = clip_ratio
-        self.max_grad_norm = max_grad_norm
-        self.value_coeff = value_coeff
-        self.entropy_coeff = entropy_coeff
+        self.clip_ratio = config["clip_ratio"]
+        self.max_grad_norm = config["max_grad_norm"]
+        self.value_coeff = config["value_coeff"]
+        self.entropy_coeff = config["entropy_coeff"]
 
         self.actor_critic = ActorCritic(obs_dim, action_dim, device, **ac_kwargs)
 
         self.optimizer = torch.optim.Adam(
-            self.actor_critic.parameters(), lr=lr, eps=1e-5
+            self.actor_critic.parameters(), lr=config["lr"], eps=1e-5
         )
 
     def act(self, obs, prev_action, prev_rew, rnn_state):
@@ -82,7 +83,7 @@ class PPO(nn.Module):
         writer.add_scalar("PPO/explained_variance", explained_var, global_step)
         writer.add_scalar("PPO/value_loss", v_loss.item(), global_step)
         writer.add_scalar("PPO/policy_loss", pi_loss.item(), global_step)
-        writer.add_scalar("PPOAgent/entropy", pi_info["ent"].item(), global_step)
+        writer.add_scalar("PPO/entropy", pi_info["ent"].item(), global_step)
         writer.add_scalar("PPO/approx_kl", pi_info["kl"].item(), global_step)
         writer.add_scalar("PPO/clip_frac", pi_info["cf"].item(), global_step)
 

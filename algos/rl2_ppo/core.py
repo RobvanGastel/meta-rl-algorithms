@@ -43,6 +43,7 @@ class ActorCritic(nn.Module):
         obs_dim,
         action_dim,
         device,
+        rnn_type,
         obs_enc_dim,
         rnn_state_size,
         actor_hidden_sizes,
@@ -62,11 +63,13 @@ class ActorCritic(nn.Module):
         @param output_activation: activation function for output layer
         """
         super().__init__()
+        assert rnn_type == "gru" or rnn_type == "lstm", f"Passed unsuported rnn type"
 
         self.action_dim = action_dim
         self.device = device
 
-        ### RNN layers
+        ### RNN layer
+        self.rnn_type = rnn_type
         self.obs_enc_dim = obs_enc_dim
         self.rnn_state_size = rnn_state_size
 
@@ -76,7 +79,15 @@ class ActorCritic(nn.Module):
 
         # RNN input: (batch size, obs embedding + one-hot actions + reward)
         rnn_input = obs_enc_dim + 1 + action_dim
-        self.rnn = nn.LSTM(rnn_input, self.rnn_state_size, batch_first=True).to(device)
+
+        if self.rnn_type == "lstm":
+            self.rnn = nn.LSTM(rnn_input, self.rnn_state_size, batch_first=True).to(
+                device
+            )
+        elif self.rnn_type == "gru":
+            self.rnn = nn.GRU(rnn_input, self.rnn_state_size, batch_first=True).to(
+                device
+            )
 
         for name, param in self.rnn.named_parameters():
             if "bias" in name:
@@ -108,10 +119,15 @@ class ActorCritic(nn.Module):
         return torch.eye(self.action_dim).to(self.device)[act.long(), :]
 
     def initialize_state(self, batch_size):
-        return (
-            torch.zeros(1, batch_size, self.rnn_state_size).to(self.device),
-            torch.zeros(1, batch_size, self.rnn_state_size).to(self.device),
-        )
+        if self.rnn_type == "lstm":
+            rnn_state = (
+                torch.zeros(1, batch_size, self.rnn_state_size).to(self.device),
+                torch.zeros(1, batch_size, self.rnn_state_size).to(self.device),
+            )
+        elif self.rnn_type == "gru":
+            rnn_state = torch.zeros(1, batch_size, self.rnn_state_size).to(self.device)
+
+        return rnn_state
 
     def recurrent_state(self, obs, prev_action, prev_reward, rnn_state, training=False):
 

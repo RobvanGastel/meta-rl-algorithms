@@ -1,16 +1,27 @@
-# experiment
+# Experiment
 device: cuda
 seed: 42
-meta_epochs: 1000
-episodes: 20
+meta_epochs: 100000
+episodes: 30
 
-# agent
+
+# Agent
+# E-MAML settings for RL2
+rnn_type: "gru"
 update_epochs: 15
 update_every_n: 5
-obs_enc_dim: 512
+obs_enc_dim: 128
 rnn_state_size: 128
 actor_hidden_sizes: [128, 128]
 critic_hidden_sizes: [128, 128]
 
-# environment
+lr: 3.0e-3
+gae_lambda: 0.997
+clip_ratio: 0.2
+entropy_coeff: 0.001
+value_coeff: 0.5
+max_grad_norm: 0.9
+
+
+# Environment
 max_episode_steps: 100

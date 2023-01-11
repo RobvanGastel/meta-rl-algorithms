@@ -16,6 +16,7 @@ def main(config):
 
     # Config
     ac_kwargs = {
+        "rnn_type": config["rnn_type"],
         "obs_enc_dim": config["obs_enc_dim"],
         "rnn_state_size": config["rnn_state_size"],
         "actor_hidden_sizes": config["actor_hidden_sizes"],
@@ -37,6 +38,7 @@ def main(config):
 
     env = np.random.choice(envs, 1)[0]
     agent = PPO(
+        config,
         obs_dim=env.observation_space.shape[0],
         action_dim=env.action_space.n,
         ac_kwargs=ac_kwargs,
@@ -44,6 +46,7 @@ def main(config):
     )
     buffer = RolloutBuffer(
         size=config["max_episode_steps"],
+        gae_lambda=config["gae_lambda"],
         state_dim=env.observation_space.shape[0],
         action_dim=env.action_space.n,
         device=device,
