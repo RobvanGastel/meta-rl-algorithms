@@ -5,7 +5,7 @@ class RolloutBuffer:
     def __init__(
         self,
         size,
-        state_dim,
+        obs_dim,
         action_dim,
         gamma=0.99,
         gae_lambda=0.95,
@@ -14,7 +14,7 @@ class RolloutBuffer:
         self.device = device
 
         self.data = {
-            "obs": torch.zeros((size, state_dim)).to(device),
+            "obs": torch.zeros((size, obs_dim)).to(device),
             "action": torch.zeros((size, action_dim)).to(device),
             "advantage": torch.zeros((size)).to(device),
             "reward": torch.zeros((size)).to(device),
@@ -23,7 +23,7 @@ class RolloutBuffer:
             "prev_reward": torch.zeros((size)).to(device),
             "prev_action": torch.zeros((size)).to(device),
             "log_prob": torch.zeros((size)).to(device),
-            "termination": torch.zeros((size,)).to(device),
+            "termination": torch.zeros((size)).to(device),
         }
         self.episodes = []
 
@@ -66,10 +66,16 @@ class RolloutBuffer:
         # Calculate advantages
         prev_advantage = 0
         for step in reversed(range(self.max_size)):
+
+            # The "value" argument should be 0 if the trajectory ended
+            # because the agent reached a terminal state (died).
             if step == self.max_size - 1:
                 next_non_terminal = 1.0 - last_termination
                 next_value = last_value
             else:
+                # Otherwise it should be V(s_t), the value function estimated for the
+                # last state. This allows us to bootstrap the reward-to-go calculation
+                # to account. for timesteps beyond the arbitrary episode horizon.
                 next_non_terminal = 1.0 - self.data["termination"][step + 1]
                 next_value = self.data["value"][step + 1]
 
@@ -96,8 +102,7 @@ class RolloutBuffer:
     def get(self):
         # format the experience to (batch_size, horizon, ...) length
         batch = {
-            k: torch.stack([ep[k] for ep in self.episodes])
-            for k in self.episodes[0].keys()
+            k: torch.stack([ep[k] for ep in self.episodes]) for k in self.data.keys()
         }
 
         return batch, len(self.episodes)

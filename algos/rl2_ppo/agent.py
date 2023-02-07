@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import torch.nn as nn
 
-
+import utils.misc as misc
 from utils.logger import Logger
 from algos.rl2_ppo.core import ActorCritic
 
@@ -10,7 +10,6 @@ from algos.rl2_ppo.core import ActorCritic
 class PPO(nn.Module):
     def __init__(
         self,
-        config,
         obs_dim,
         action_dim,
         ac_kwargs,
@@ -18,28 +17,38 @@ class PPO(nn.Module):
         seed=0,
         lr=3e-4,
         clip_ratio=0.2,
-        entropy_coeff=0.1,
         value_coeff=0.5,
+        entropy_coeff=0.01,
         max_grad_norm=0.5,
+        **kwargs,
     ):
         super().__init__()
         torch.manual_seed(seed)
-        self.device = device
 
         # Optimize variables
-        self.clip_ratio = config["clip_ratio"]
-        self.max_grad_norm = config["max_grad_norm"]
-        self.value_coeff = config["value_coeff"]
-        self.entropy_coeff = config["entropy_coeff"]
+        self.clip_ratio = clip_ratio
+        self.value_coeff = value_coeff
+        self.entropy_coeff = entropy_coeff
+        self.max_grad_norm = max_grad_norm
 
-        self.actor_critic = ActorCritic(obs_dim, action_dim, device, **ac_kwargs)
+        self.actor_critic = ActorCritic(obs_dim, action_dim, device=device, **ac_kwargs)
 
         self.optimizer = torch.optim.Adam(
-            self.actor_critic.parameters(), lr=config["lr"], eps=1e-5
+            self.actor_critic.parameters(), lr=lr, eps=1e-5
         )
 
-    def act(self, obs, prev_action, prev_rew, rnn_state):
-        return self.actor_critic.step(obs, prev_action, prev_rew, rnn_state)
+    def act(self, obs, prev_action, prev_reward, rnn_state):
+        return self.actor_critic.step(obs, prev_action, prev_reward, rnn_state)
+
+    def save_weights(self, path, epoch):
+        misc.save_state(
+            {
+                "actor_critic": self.actor_critic.state_dict(),
+                "optimizer": self.optimizer.state_dict(),
+            },
+            path,
+            epoch,
+        )
 
     def optimize(
         self,
@@ -71,7 +80,6 @@ class PPO(nn.Module):
             self.optimizer.step()
 
             if target_kl and pi_info["kl"] > 1.5 * target_kl:
-                print(f"target kl reached {pi_info['kl']}")
                 break
 
         # Logging of the agent variables
@@ -97,8 +105,12 @@ class PPO(nn.Module):
         b_value = batch["value"]
         b_prev_rew = b_prev_rew.unsqueeze(-1)
 
+        # Unsqueeze for continuous actions
+        if len(b_prev_act.shape) == 2:
+            b_prev_act = b_prev_act.unsqueeze(-1)
+
         # Value loss
-        v, _ = self.actor_critic.v(
+        v, _ = self.actor_critic.value(
             b_obs, b_prev_act, b_prev_rew, rnn_state, training=True
         )
 
@@ -124,6 +136,10 @@ class PPO(nn.Module):
             batch["prev_reward"],
         )
         b_prev_rew = b_prev_rew.unsqueeze(-1)
+
+        # Unsqueeze for continuous actions
+        if len(b_prev_act.shape) == 2:
+            b_prev_act = b_prev_act.unsqueeze(-1)
 
         # Normalize the advtange, done per batch to not affect the mini-batch too much
         b_advantage = (b_advantage - b_advantage.mean()) / (b_advantage.std() + 1e-8)

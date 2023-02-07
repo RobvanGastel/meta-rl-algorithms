@@ -1,5 +1,5 @@
 # Meta-Reinforcement Learning Algorithms
-A PyTorch implementation of meta-reinforcement learning algorithms, RL$^2$ PPO, SNAIL, and VariBAD. 
+A PyTorch implementation of meta-reinforcement learning algorithms, RL^2 PPO, SNAIL, and VariBAD. 
 
 TODO
 
@@ -18,10 +18,14 @@ pip install requirements.txt
 TODO
 
 ## Algorithms
+All base learners use PPO.
 
-- [x] RL$^2$ Proximal Policy Optimization (PPO)
+- [x] RL^2 Proximal Policy Optimization (PPO)
 - [ ] VariBAD
 - [ ] SNAIL
+
+Ideas for:
+- Proximal Policy Optimization with Episodic Planning Networks (EPNs)
 
 
 ## Results
