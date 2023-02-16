@@ -19,7 +19,7 @@ class Logger(logging.Logger, metaclass=Singleton):
         self.writer = SummaryWriter(os.path.join(log_dir, "tb"))
 
         formatter = logging.Formatter(
-            "%(asctime)s | %(filename)15s [ %(levelname)8s ] %(message)s",
+            "%(asctime)s | %(levelname)-8s | %(message)s",
             "%Y-%m-%dT%T%Z",
         )
         file_handler = logging.FileHandler(os.path.join(log_dir, f"{name}.log"))

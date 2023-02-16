@@ -30,13 +30,6 @@ def layer_init(layer, std=np.sqrt(2), bias_const=0.0):
 
 
 def mlp(dims, stds, hidden_activation=nn.Tanh, output_activation=nn.Identity):
-    """
-    Construct a multi-layer perceptron with given hidden and output activations.
-    @param dims: list of dimensions, including input and output dims
-    @param stds: list of standard deviations for each layer, shape = (len(dims)-1,)
-    @param hidden_activation: activation function for all hidden layers
-    @param output_activation: activation function for output layer
-    """
     assert len(dims) == len(stds) + 1
 
     layers = []
@@ -54,6 +47,8 @@ def mlp(dims, stds, hidden_activation=nn.Tanh, output_activation=nn.Identity):
         ]
     )
     return nn.Sequential(*layers)
+
+
 def save_state(state_dict, path, epoch=None, job_id=None):
     """Save the model and optimizer states using PyTorch"""
 

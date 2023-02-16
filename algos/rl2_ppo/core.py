@@ -82,16 +82,8 @@ class ActorCritic(nn.Module):
         hidden_activation=nn.ReLU,
         output_activation=nn.ReLU,
     ):
-        """
-        Actor Critic network for the agent.
-        @param obs_dim: dimension of the state space
-        @param action_dim: dimension of the action space
-        @param actor_hidden_sizes: list of hidden layer sizes for actor network
-        @param critic_hidden_sizes: list of hidden layer sizes for critic network
-        @param hidden_activation: activation function for all hidden layers
-        @param output_activation: activation function for output layer
-        """
         super().__init__()
+
         assert rnn_type in ["gru", "lstm"], "RNN type should be 'gru' or 'lstm'"
         assert type(action_space) in [
             Box,
@@ -151,6 +143,9 @@ class ActorCritic(nn.Module):
 
     def _one_hot(self, act):
         if self.cont_action_space:
+            if len(act.shape) == 2:
+                act = act.unsqueeze(-1)
+
             return act
         return torch.eye(self.action_dim).to(self.device)[act.long(), :]
 

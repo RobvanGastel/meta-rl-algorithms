@@ -17,36 +17,41 @@ def main(config):
     Logger.get().info(f"config: {config}")
 
     # Discrete action distribution, same number of testing and training envs as used in E-MAML
-    # envs = [
-    #     RecordEpisodeStatistics(KrazyWorld(seed=s, task_seed=s**2 + 1))
-    #     for s in range(32)
-    # ]
+    envs = [
+        RecordEpisodeStatistics(
+            KrazyWorld(
+                seed=s,
+                task_seed=s**2 + 1,
+                max_episode_steps=config["max_episode_steps"],
+            )
+        )
+        for s in range(32)
+    ]
     # test_envs = [
     #     RecordEpisodeStatistics(KrazyWorld(seed=s, task_seed=s**2 + 1))
     #     for s in range(100, 164)
     # ]
 
     # Continuous action distribution, normally distributing the gravity
-    envs = [
-        RecordEpisodeStatistics(
-            gym.make("Pendulum-v1", g=9.81 + np.random.normal(size=1)[0])
-        )
-        for i in range(32)
-    ]
+    # envs = [
+    #     RecordEpisodeStatistics(
+    #         gym.make("Pendulum-v1", g=9.81 + np.random.normal(size=1)[0])
+    #     )
+    #     for i in range(32)
+    # ]
 
-    # Check the action space
     device = torch.device(config["device_id"])
 
     agent = PPO(
-        obs_dim=envs[0].observation_space,
-        action_dim=envs[0].action_space,
+        obs_space=envs[0].observation_space,
+        action_space=envs[0].action_space,
         device=device,
         ac_kwargs=config["actor_critic"],
         **config["ppo"],
     )
     buffer = RolloutBuffer(
-        obs_dim=envs[0].observation_space.shape[0],
-        action_dim=envs[0].action_space.shape[0],
+        obs_space=envs[0].observation_space,
+        action_space=envs[0].action_space,
         device=device,
         size=config["max_episode_steps"],
         gae_lambda=config["ppo"]["gae_lambda"],
@@ -60,7 +65,7 @@ def main(config):
 
         # RL^2 variables
         rnn_state = agent.actor_critic.initialize_state(batch_size=1)
-        prev_action = torch.tensor(env.action_space.sample()).to(device).view(1, -1)
+        prev_action = torch.tensor(env.action_space.sample()).to(device).view(-1)
         prev_rew = torch.tensor(0).to(device).view(1, 1)
         ###
 
@@ -112,14 +117,17 @@ def main(config):
 
                         Logger.get().info(
                             f"meta-epoch: {meta_epoch} episode #: {epoch} "
-                            f"time elapsed: {info['episode']['t']} "
-                            f"episode return: {info['episode']['r']} "
-                            f" and episode length: {info['episode']['l']}"
+                            f"time elapsed: {np.mean(info['episode']['t']):.1f} "
+                            f"episode return: {np.mean(info['episode']['r']):.3f} "
+                            f"and episode length: {np.mean(info['episode']['l']):.0f}"
                         )
 
                     # Log final episode reward
                     Logger.get().writer.add_scalar(
-                        "PPO/return", info["episode"]["r"], global_step
+                        "PPO/episode_return", info["episode"]["r"], global_step
+                    )
+                    Logger.get().writer.add_scalar(
+                        "PPO/episode_length", info["episode"]["l"], global_step
                     )
 
                 global_step += 1

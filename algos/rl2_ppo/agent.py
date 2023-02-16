@@ -10,8 +10,8 @@ from algos.rl2_ppo.core import ActorCritic
 class PPO(nn.Module):
     def __init__(
         self,
-        obs_dim,
-        action_dim,
+        obs_space,
+        action_space,
         ac_kwargs,
         device,
         seed=0,
@@ -31,7 +31,9 @@ class PPO(nn.Module):
         self.entropy_coeff = entropy_coeff
         self.max_grad_norm = max_grad_norm
 
-        self.actor_critic = ActorCritic(obs_dim, action_dim, device=device, **ac_kwargs)
+        self.actor_critic = ActorCritic(
+            obs_space, action_space, device=device, **ac_kwargs
+        )
 
         self.optimizer = torch.optim.Adam(
             self.actor_critic.parameters(), lr=lr, eps=1e-5
@@ -65,8 +67,8 @@ class PPO(nn.Module):
 
             # TODO: Potential of mini-batching the episodes
 
-            pi_loss, pi_info = self._compute_policy_loss(batch, zero_rnn_state)
-            v_loss = self._compute_value_loss(batch, zero_rnn_state)
+            pi_loss, pi, pi_info = self._compute_policy_loss(batch, zero_rnn_state)
+            v_loss, v = self._compute_value_loss(batch, zero_rnn_state)
 
             loss = (
                 pi_loss
@@ -87,7 +89,11 @@ class PPO(nn.Module):
         var_y = np.var(y_true)
         explained_var = np.nan if var_y == 0 else 1 - np.var(y_true - y_pred) / var_y
 
+        # Value function distribution
         writer = Logger.get().writer
+        writer.add_histogram("PPO/value_histogram", v, global_step)
+        writer.add_histogram("PPO/policy_histogram", pi.sample(), global_step)
+
         writer.add_scalar("PPO/explained_variance", explained_var, global_step)
         writer.add_scalar("PPO/value_loss", v_loss.item(), global_step)
         writer.add_scalar("PPO/policy_loss", pi_loss.item(), global_step)
@@ -96,18 +102,14 @@ class PPO(nn.Module):
         writer.add_scalar("PPO/clip_frac", pi_info["cf"].item(), global_step)
 
     def _compute_value_loss(self, batch, rnn_state):
-        b_obs, b_return, b_prev_act, b_prev_rew = (
+        b_obs, b_return, b_value, b_prev_act, b_prev_rew = (
             batch["obs"],
             batch["return"],
+            batch["value"],
             batch["prev_action"],
             batch["prev_reward"],
         )
-        b_value = batch["value"]
         b_prev_rew = b_prev_rew.unsqueeze(-1)
-
-        # Unsqueeze for continuous actions
-        if len(b_prev_act.shape) == 2:
-            b_prev_act = b_prev_act.unsqueeze(-1)
 
         # Value loss
         v, _ = self.actor_critic.value(
@@ -123,7 +125,7 @@ class PPO(nn.Module):
         loss_v_max = torch.max(loss_v_unclipped, loss_v_clipped)
         loss_v = 0.5 * loss_v_max.mean()
 
-        return loss_v
+        return loss_v, v
 
     def _compute_policy_loss(self, batch, rnn_state):
 
@@ -136,10 +138,6 @@ class PPO(nn.Module):
             batch["prev_reward"],
         )
         b_prev_rew = b_prev_rew.unsqueeze(-1)
-
-        # Unsqueeze for continuous actions
-        if len(b_prev_act.shape) == 2:
-            b_prev_act = b_prev_act.unsqueeze(-1)
 
         # Normalize the advtange, done per batch to not affect the mini-batch too much
         b_advantage = (b_advantage - b_advantage.mean()) / (b_advantage.std() + 1e-8)
@@ -162,4 +160,4 @@ class PPO(nn.Module):
             clip_frac = clipped.float().mean()
             ent = pi.entropy().mean()
 
-        return loss_pi, dict(kl=approx_kl, ent=ent, cf=clip_frac)
+        return loss_pi, pi, dict(kl=approx_kl, ent=ent, cf=clip_frac)

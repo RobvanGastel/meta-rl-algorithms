@@ -3,10 +3,10 @@ device_id: cuda
 seed: 42
 episodes: 30
 meta_epochs: 100_000
-store_weights_n: 50
+store_weights_n: 100
 
 # Environment
-max_episode_steps: 500
+max_episode_steps: 50
 
 
 # PPO Agent
@@ -14,15 +14,15 @@ update_every_n: 5
 update_epochs: 15
 actor_critic:
   rnn_type: "gru"
-  obs_enc_dim: 512 
+  obs_enc_dim: 128 
   rnn_size: 128
   actor_hidden_sizes: [128, 128]
   critic_hidden_sizes: [128, 128]
 
 ppo:
-  lr: 3.0e-6
+  lr: 3.0e-4
   gae_lambda: 0.95
   clip_ratio: 0.2
-  value_coeff: 0.3
-  max_grad_norm: 0.9
+  value_coeff: 0.5
+  max_grad_norm: 0.5
   entropy_coeff: 0.01

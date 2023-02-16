@@ -1,21 +1,31 @@
 import torch
+from gymnasium.spaces import Box, Discrete
 
 
 class RolloutBuffer:
     def __init__(
         self,
         size,
-        obs_dim,
-        action_dim,
+        obs_space,
+        action_space,
         gamma=0.99,
         gae_lambda=0.95,
         device=None,
     ):
         self.device = device
+        obs_dim = obs_space.shape[0]
+
+        if isinstance(action_space, Box):
+            action_dim = action_space.shape[0]
+            action_dim = (size, action_dim)
+
+        elif isinstance(action_space, Discrete):
+            action_dim = action_space.n
+            action_dim = size
 
         self.data = {
             "obs": torch.zeros((size, obs_dim)).to(device),
-            "action": torch.zeros((size, action_dim)).to(device),
+            "action": torch.zeros(action_dim).to(device),
             "advantage": torch.zeros((size)).to(device),
             "reward": torch.zeros((size)).to(device),
             "return": torch.zeros((size)).to(device),
@@ -41,7 +51,7 @@ class RolloutBuffer:
         value,
         log_prob,
     ):
-        assert self.curr_size < self.max_size
+        assert self.curr_size <= self.max_size
         self.data["obs"][self.curr_size] = obs
         self.data["action"][self.curr_size] = action
         self.data["reward"][self.curr_size] = torch.tensor(reward).to(self.device)
