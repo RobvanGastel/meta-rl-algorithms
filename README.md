@@ -4,18 +4,22 @@ A PyTorch implementation of meta-reinforcement learning algorithms, RL^2 PPO, SN
 TODO
 
 ## Setup
-Install the following packages.
+Install the packages using the `requirements.txt` file.
 
 ```bash
-# using conda,
-conda create --name metarl --file requirements.txt
-# Or using pip,
+# using conda
+conda create --name meta_rl --file requirements.txt
+# Or pip
 pip install requirements.txt
 ```
 
 ## Usage
+Run experiments by using the following example command:
 
-TODO
+```bash
+python main.py --name experiment_name -c configs/rl2_ppo.yml
+```
+
 
 ## Algorithms
 All base learners use PPO.
