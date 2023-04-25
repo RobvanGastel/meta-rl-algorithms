@@ -2,7 +2,6 @@ import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 
-
 from envs.krazy_world.krazy_world import KrazyGridWorld
 
 
