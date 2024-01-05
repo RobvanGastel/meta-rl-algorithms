@@ -49,6 +49,11 @@ class KrazyWorld(gym.Env):
     @property
     def action_space(self):
         return self._action_space
+    
+    @property
+    def spec(self):
+        return self._spec
+    
 
     def reset(
         self,
@@ -75,7 +80,7 @@ class KrazyWorld(gym.Env):
         return obs, rew, terminated, truncated, info
 
     def render(self):
-        self._env.render()
+        return self._env.render()
 
     def close(self):
         self._env.close()

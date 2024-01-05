@@ -472,8 +472,10 @@ class KrazyGridWorld:
 
             self.simple_image_viewer = SimpleImageViewer()
         im_obs = self.get_img_obs(render_global_obs=True)
-        self.simple_image_viewer.imshow(im_obs)
-        time.sleep(0.075)
+        # self.simple_image_viewer.imshow(im_obs)
+        # TODO: Adjusted
+        # time.sleep(0.075)
+        return im_obs
 
     def get_state_obs(self, flatten=True):
         grid_np = copy.deepcopy(self.game_grid.grid_np)
