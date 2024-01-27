@@ -1,0 +1,16 @@
+# Experiment
+device_id: cpu 
+seed: 42
+epochs: 1200
+num_steps: 200
+
+
+# PPO Agent
+# TODO: Parse network sizes
+actor_critic:
+  actor_hidden_sizes: [64, 64, 64]
+  critic_hidden_sizes: [64, 64, 64]
+
+a2c:
+  lr: 3.0e-2
+  max_grad_norm: 0.5
