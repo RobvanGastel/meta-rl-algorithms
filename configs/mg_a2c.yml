@@ -3,9 +3,8 @@ device_id: cpu
 seed: 42
 epochs: 1200
 num_steps: 200
+gamma: 0.99
 
-
-# PPO Agent
 # TODO: Parse network sizes
 actor_critic:
   actor_hidden_sizes: [64, 64, 64]
