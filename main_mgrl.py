@@ -19,6 +19,8 @@ def main(config):
     Logger.get().info(f"Start meta-training, experiment name: {config['name']}")
     Logger.get().info(f"config: {config}")
 
+    torch.autograd.set_detect_anomaly(True)
+
     env = RecordEpisodeStatistics(gym.make("CartPole-v0"))
 
     agent = A2C(
@@ -29,55 +31,59 @@ def main(config):
     )
 
     # Define meta parameter
-    gamma = -torch.log(
-        (1 / torch.tensor(config["gamma"], requires_grad=True)) - 1
+    gamma = nn.Parameter(
+        -torch.log((1 / torch.tensor(config["gamma"])) - 1), requires_grad=True
     )
-    print(f"Starting value gamma: {torch.sigmoid(gamma)}")
+    # with torch.no_grad():
+    #     print(f"Starting value gamma: {torch.sigmoid(gamma)}")
 
     # Torchopt optimizers
     inner_optim = torchopt.MetaSGD(agent.ac, lr=5e-2)
     meta_optim = torchopt.SGD([gamma], lr=5e-2)
-    net_state = torchopt.extract_state_dict(agent.ac)
 
     # TODO: Refactor after debugging
-    inner_loop = 2
+    inner_loop = 1
     debug_rews = []
-    inner_loss = nn.HuberLoss()
+    inner_loss = nn.SmoothL1Loss()
+
     for epoch in range(config["epochs"]):
+
+        net_state = torchopt.extract_state_dict(agent.ac)
         for _ in range(inner_loop):
             data, rews = agent.collect_rollouts(env, torch.sigmoid(gamma))
             debug_rews.append(rews)
 
-            # Policy loss
             a = -(torch.sum(data["action_log"] * data["advantages"].detach()))
-            # Value loss
             b = inner_loss(data["return"], data["value"])
 
             loss = a + 0.5 * b
             inner_optim.step(loss)
 
+        torchopt.recover_state_dict(agent.ac, net_state)
+
         # Outer-loop
-        output = agent.ac.step(data["obs"])
+        agent.ac.step(data["obs"])
         data, rews = agent.collect_rollouts(env, torch.sigmoid(gamma))
 
         pi_loss = -(torch.sum(data["action_log"] * data["advantages"].detach()))
-        v_loss = nn.HuberLoss()(data["return"], data["value"])
-        meta_loss = pi_loss + 0.5 * v_loss
+        v_loss = nn.SmoothL1Loss()(data["return"], data["value"])
+        meta_loss = 0.5 * v_loss + pi_loss
 
         meta_optim.zero_grad()
-        meta_loss.backward()
-        meta_optim.step()
 
-        torchopt.recover_state_dict(agent.ac, net_state)
+        meta_loss.backward()
+        print(f"gamma.grad = {gamma.grad!r}")
+        meta_optim.step()
 
         # TODO: Refactor after debugging
         if epoch % 10 == 0:
-            print(
-                f"Average reward during episodes {epoch} is "
-                f"avg: {sum(debug_rews)/len(debug_rews)} max: {max(debug_rews)} "
-                f"min: {min(debug_rews)} "
-                f"gamma: {torch.sigmoid(gamma):.4f}"
-            )
+            with torch.no_grad():
+                print(
+                    f"Average reward during episodes {epoch} is "
+                    f"avg: {sum(debug_rews)/len(debug_rews)} max: {max(debug_rews)} "
+                    f"min: {min(debug_rews)} "
+                    f"gamma: {torch.sigmoid(gamma):.4f}"
+                )
             debug_rews = []
 
 
