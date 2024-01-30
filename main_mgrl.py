@@ -1,6 +1,3 @@
-# Small experiment testing meta-gradient reinforcement learning on a single environment
-# to inspect the meta-gradient.
-
 import yaml
 import argparse
 
@@ -32,48 +29,47 @@ def main(config):
 
     # Define meta parameter
     gamma = nn.Parameter(
-        -torch.log((1 / torch.tensor(config["gamma"])) - 1), requires_grad=True
+        -torch.log((1 / torch.tensor(config["gamma"], requires_grad=True)) - 1),
+        requires_grad=True,
     )
-    # with torch.no_grad():
-    #     print(f"Starting value gamma: {torch.sigmoid(gamma)}")
+    # scaler = nn.Parameter(torch.tensor(1.0), requires_grad=True)
 
     # Torchopt optimizers
-    inner_optim = torchopt.MetaSGD(agent.ac, lr=5e-2)
-    meta_optim = torchopt.SGD([gamma], lr=5e-2)
+    inner_optim = torchopt.MetaSGD(agent.ac, lr=5e-3)
+    meta_optim = torchopt.SGD([gamma], lr=5e-3)
 
     # TODO: Refactor after debugging
     inner_loop = 1
     debug_rews = []
-    inner_loss = nn.SmoothL1Loss()
+    value_loss = nn.SmoothL1Loss()
 
     for epoch in range(config["epochs"]):
 
-        net_state = torchopt.extract_state_dict(agent.ac)
         for _ in range(inner_loop):
             data, rews = agent.collect_rollouts(env, torch.sigmoid(gamma))
             debug_rews.append(rews)
 
             a = -(torch.sum(data["action_log"] * data["advantages"].detach()))
-            b = inner_loss(data["return"], data["value"])
+            b = value_loss(data["return"], data["value"])
 
             loss = a + 0.5 * b
             inner_optim.step(loss)
 
-        torchopt.recover_state_dict(agent.ac, net_state)
-
         # Outer-loop
-        agent.ac.step(data["obs"])
         data, rews = agent.collect_rollouts(env, torch.sigmoid(gamma))
 
         pi_loss = -(torch.sum(data["action_log"] * data["advantages"].detach()))
-        v_loss = nn.SmoothL1Loss()(data["return"], data["value"])
-        meta_loss = 0.5 * v_loss + pi_loss
+        v_loss = value_loss(data["return"], data["value"])
+        meta_loss = pi_loss + 0.5 * v_loss
 
         meta_optim.zero_grad()
-
         meta_loss.backward()
         print(f"gamma.grad = {gamma.grad!r}")
         meta_optim.step()
+
+        # Detach the graph
+        torchopt.stop_gradient(agent.ac)
+        torchopt.stop_gradient(inner_optim)
 
         # TODO: Refactor after debugging
         if epoch % 10 == 0:
