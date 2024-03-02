@@ -12,7 +12,6 @@ class PPO(nn.Module):
         obs_space,
         action_space,
         ac_kwargs,
-        writer,
         device,
         seed=0,
         lr=3e-4,
@@ -26,7 +25,6 @@ class PPO(nn.Module):
         torch.manual_seed(seed)
 
         # Optimize variables
-        self.writer = writer
         self.clip_ratio = clip_ratio
         self.value_coeff = value_coeff
         self.entropy_coeff = entropy_coeff
@@ -69,6 +67,7 @@ class PPO(nn.Module):
         )
 
         for _ in range(update_epochs):
+
             # TODO: Potential of mini-batching the episodes
 
             pi_loss, pi, pi_info = self._compute_policy_loss(
@@ -98,29 +97,20 @@ class PPO(nn.Module):
             batch["return"].reshape(-1).cpu().numpy(),
         )
         var_y = np.var(y_true)
-        explained_var = 0 if var_y == 0 else 1 - np.var(y_true - y_pred) / var_y
+        explained_var = (
+            np.nan if var_y == 0 else 1 - np.var(y_true - y_pred) / var_y
+        )
 
         # Value function distribution
-        self.writer.add_histogram(
-            "PPO/value_histogram", batch["value"], global_step
-        )
-        self.writer.add_histogram(
-            "PPO/policy_histogram", pi.sample(), global_step
-        )
-        self.writer.add_scalar(
-            "PPO/explained_variance", explained_var, global_step
-        )
-        self.writer.add_scalar(
-            "PPO/entropy", pi_info["ent"].item(), global_step
-        )
-        self.writer.add_scalar(
-            "PPO/approx_kl", pi_info["kl"].item(), global_step
-        )
-        self.writer.add_scalar(
-            "PPO/clip_frac", pi_info["cf"].item(), global_step
-        )
-        self.writer.add_scalar("PPO/value_loss", v_loss.item(), global_step)
-        self.writer.add_scalar("PPO/policy_loss", pi_loss.item(), global_step)
+        # writer.add_histogram("PPO/value_histogram", batch["value"], global_step)
+        # writer.add_histogram("PPO/policy_histogram", pi.sample(), global_step)
+
+        # writer.add_scalar("PPO/explained_variance", explained_var, global_step)
+        # writer.add_scalar("PPO/value_loss", v_loss.item(), global_step)
+        # writer.add_scalar("PPO/policy_loss", pi_loss.item(), global_step)
+        # writer.add_scalar("PPO/entropy", pi_info["ent"].item(), global_step)
+        # writer.add_scalar("PPO/approx_kl", pi_info["kl"].item(), global_step)
+        # writer.add_scalar("PPO/clip_frac", pi_info["cf"].item(), global_step)
 
     def _compute_value_loss(self, batch, rnn_state):
         b_obs, b_return, b_value, b_prev_act, b_prev_rew = (

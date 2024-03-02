@@ -2,22 +2,6 @@ import torch
 from gymnasium.spaces import Box, Discrete
 
 
-def discount_cumsum(x, discount):
-    """
-    Compute discounted cumulative sums of a vector using PyTorch.
-
-    :param x: Input tensor.
-    :param discount: Discount factor.
-    :return: Discounted cumulative sum tensor.
-    """
-    result = torch.zeros_like(x)
-    running_add = 0
-    for t in reversed(range(len(x))):
-        running_add = x[t] + discount * running_add
-        result[t] = running_add
-    return result
-
-
 class RolloutBuffer:
     def __init__(
         self,
@@ -70,12 +54,8 @@ class RolloutBuffer:
         assert self.curr_size <= self.max_size
         self.data["obs"][self.curr_size] = obs
         self.data["action"][self.curr_size] = action
-        self.data["reward"][self.curr_size] = torch.tensor(reward).to(
-            self.device
-        )
-        self.data["termination"][self.curr_size] = torch.tensor(term).to(
-            self.device
-        )
+        self.data["reward"][self.curr_size] = torch.tensor(reward).to(self.device)
+        self.data["termination"][self.curr_size] = torch.tensor(term).to(self.device)
         self.data["prev_action"][self.curr_size] = prev_action
         self.data["prev_reward"][self.curr_size] = prev_reward
         self.data["value"][self.curr_size] = value
@@ -94,8 +74,6 @@ class RolloutBuffer:
     def finish_path(self, last_value, last_termination):
 
         # Calculate advantages
-        # TODO: Refactor to discount_cumsum function to take advatange of
-        # parallel function.
         prev_advantage = 0
         for step in reversed(range(self.max_size)):
 
@@ -118,10 +96,7 @@ class RolloutBuffer:
             )
             self.data["advantage"][step] = (
                 delta
-                + self.gamma
-                * self.gae_lambda
-                * next_non_terminal
-                * prev_advantage
+                + self.gamma * self.gae_lambda * next_non_terminal * prev_advantage
             )
             prev_advantage = self.data["advantage"][step]
 
@@ -137,8 +112,7 @@ class RolloutBuffer:
     def get(self):
         # format the experience to (batch_size, horizon, ...) length
         batch = {
-            k: torch.stack([ep[k] for ep in self.episodes])
-            for k in self.data.keys()
+            k: torch.stack([ep[k] for ep in self.episodes]) for k in self.data.keys()
         }
 
         return batch, len(self.episodes)
