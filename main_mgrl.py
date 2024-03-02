@@ -29,19 +29,19 @@ def main(config):
 
     # Define meta parameter
     gamma = nn.Parameter(
-        -torch.log((1 / torch.tensor(config["gamma"], requires_grad=True)) - 1),
+        -torch.log((1 / torch.tensor(config["gamma"])) - 1),
         requires_grad=True,
     )
     # scaler = nn.Parameter(torch.tensor(1.0), requires_grad=True)
 
     # Torchopt optimizers
     inner_optim = torchopt.MetaSGD(agent.ac, lr=5e-3)
-    meta_optim = torchopt.SGD([gamma], lr=5e-3)
+    meta_optim = torchopt.SGD([gamma], lr=1e-4)
 
     # TODO: Refactor after debugging
-    inner_loop = 1
+    inner_loop = 2
     debug_rews = []
-    value_loss = nn.SmoothL1Loss()
+    value_loss = nn.MSELoss()
 
     for epoch in range(config["epochs"]):
 

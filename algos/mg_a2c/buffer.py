@@ -89,6 +89,7 @@ class RolloutBuffer:
         self.data["return"][self.start : self.ptr] = discount_cumsum(
             rews, gamma
         )[:-1]
+
         self.start = self.ptr
 
     def get(self) -> dict:
