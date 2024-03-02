@@ -1,5 +1,5 @@
 # Meta-Reinforcement Learning Algorithms
-A PyTorch implementation of meta-reinforcement learning algorithms, RL^2 PPO, SNAIL, and VariBAD. 
+A PyTorch implementation of meta-reinforcement learning algorithms, RL^2 PPO, MGRL, SNAIL, and VariBAD. 
 
 TODO
 
@@ -22,9 +22,9 @@ python main.py --name experiment_name -c configs/rl2_ppo.yml
 
 
 ## Algorithms
-All base learners use PPO.
 
 - [x] RL^2 Proximal Policy Optimization (PPO)
+- [x] Meta-Gradient Reinforcement Learning (A2C)
 - [ ] VariBAD
 - [ ] SNAIL
 
@@ -33,8 +33,9 @@ Ideas for:
 
 
 ## Results
+Initial results showing the convergence of meta-gradient reinforcement learning with A2C. The inner-loop optimizes on the CartPole environment and in the outer-loop the gamma value is cross-validated and updated by gradient descent. The current setting shows similar performance to the regular A2C algorithm and the implementation might benefit from conditioning the value and policy on gamma value embeddings.
 
-TODO
+<img alt="MGRL A2C experiment" src="assets/exp1_mg_a2c.png">
 
 ## References
 - Achiam, J. (2018). Spinning Up in Deep Reinforcement Learning. https://spinningup.openai.com/en/latest/index.html
