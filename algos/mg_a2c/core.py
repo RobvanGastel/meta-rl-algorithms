@@ -4,9 +4,7 @@ from torch.distributions import Categorical
 
 
 class ActorCritic(nn.Module):
-    def __init__(
-        self, obs_space, action_space, hidden_size, device, **ac_kwargs
-    ):
+    def __init__(self, obs_space, action_space, hidden_size, **ac_kwargs):
         super().__init__()
 
         self.actor = nn.Sequential(

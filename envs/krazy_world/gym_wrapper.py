@@ -1,8 +1,40 @@
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
+from gymnasium.wrappers import RecordEpisodeStatistics
 
 from envs.krazy_world.krazy_world import KrazyGridWorld
+
+
+def initialize_distribution(
+    max_episode_steps, env_wrapper=RecordEpisodeStatistics
+):
+
+    # Discrete action distribution, same number of testing and training envs as used in
+    # E-MAML
+
+    train_task_seeds = [s**2 + 1 for s in range(32)]
+    test_task_seeds = [s**2 + 1 for s in range(100, 164)]
+
+    train_envs = [
+        env_wrapper(
+            KrazyWorld(
+                seed=s, task_seed=task_s, max_episode_steps=max_episode_steps
+            )
+        )
+        for s, task_s in enumerate(train_task_seeds)
+    ]
+
+    test_envs = [
+        RecordEpisodeStatistics(
+            KrazyWorld(
+                seed=s, task_seed=task_s, max_episode_steps=max_episode_steps
+            )
+        )
+        for s, task_s in enumerate(test_task_seeds)
+    ]
+
+    return train_envs, test_envs
 
 
 class KrazyWorld(gym.Env):
@@ -10,7 +42,9 @@ class KrazyWorld(gym.Env):
 
     metadata = {"render.modes": ["human"]}
 
-    def __init__(self, seed, task_seed=None, use_local_obs=True, max_episode_steps=100):
+    def __init__(
+        self, seed, task_seed=None, use_local_obs=True, max_episode_steps=100
+    ):
 
         # The settings except the seeds are taken from the E-MAML
         # implementation of krazyworld.
@@ -49,11 +83,10 @@ class KrazyWorld(gym.Env):
     @property
     def action_space(self):
         return self._action_space
-    
+
     @property
     def spec(self):
         return self._spec
-    
 
     def reset(
         self,

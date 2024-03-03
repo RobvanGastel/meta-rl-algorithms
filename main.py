@@ -12,7 +12,7 @@ from gymnasium.wrappers import RecordEpisodeStatistics
 
 from utils.logger import configure_logger
 from algos.rl2_ppo.learning import train_rl2_ppo
-from algos.mg_a2c.learning import train_a2c, train_mgrl_a2c
+from algos.mg_a2c.learning import train_a2c, train_mg_a2c
 from envs.krazy_world.gym_wrapper import initialize_distribution
 
 
@@ -21,9 +21,10 @@ def main(config):
     logging.info(f"config: {config}")
 
     # KrazyWorld distribution
-    envs, test_envs = initialize_distribution(config["max_episode_steps"])
+    # envs, test_envs = initialize_distribution(config["max_episode_steps"])
 
-    # envs = [RecordEpisodeStatistics(gym.make("CartPole-v0"))]
+    envs = [RecordEpisodeStatistics(gym.make("CartPole-v0"))]
+    # envs = [RecordEpisodeStatistics(debug ...))]
 
     logging.info(
         f"Env spaces: {envs[0].observation_space, envs[0].action_space}, "
@@ -34,9 +35,9 @@ def main(config):
 
     # Temporary interface to allow all agents to run in similar fashion
     # train_<meta>_<agent>(config, envs: list[Env], test_envs: list[Env], writer)
-    # train_a2c(config, envs)
+    train_mg_a2c(config, envs, writer=writer)
 
-    train_rl2_ppo(config, envs, test_envs, writer=writer)
+    # train_rl2_ppo(config, envs, test_envs, writer=writer)
     # train_a2c
 
 
@@ -57,7 +58,7 @@ if __name__ == "__main__":
         "-c",
         "--config",
         type=str,
-        default="configs/rl2_ppo.yml",
+        default="configs/mg_a2c.yml",
     )
     args = parser.parse_args()
     assert args.name is not None, "Pass a name for the experiment"

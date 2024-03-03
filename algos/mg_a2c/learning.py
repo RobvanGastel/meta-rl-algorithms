@@ -8,18 +8,22 @@ import gymnasium as gym
 from algos.mg_a2c.agent import A2C
 
 
-def train_mgrl_a2c(
+def train_mg_a2c(
     config,
     envs: list[gym.Env],
     test_envs: list[gym.Env] = None,
     writer: SummaryWriter = None,
 ):
+    # MGRL optimizes on a single environment
     env = envs[0]
 
     agent = A2C(
         obs_space=env.observation_space,
         action_space=env.action_space,
-        num_steps=config["num_steps"],
+        value_coeff=config["a2c"]["value_coeff"],
+        writer=writer,
+        ac_kwargs=config["actor_critic"],
+        max_episode_steps=config["max_episode_steps"],
         device=config["device"],
     )
 
@@ -35,26 +39,19 @@ def train_mgrl_a2c(
 
     # TODO: Refactor after debugging
     debug_rews = []
-    value_loss = nn.MSELoss()
-
     for epoch in range(config["epochs"]):
 
         for _ in range(config["inner_steps"]):
-            data, rews = agent.collect_rollouts(env, torch.sigmoid(gamma))
-            debug_rews.append(rews)
+            data = agent.collect_rollouts(env, torch.sigmoid(gamma))
+            # debug_rews.append(rews)
 
-            a = -(torch.sum(data["action_log"] * data["advantages"].detach()))
-            b = value_loss(data["return"], data["value"])
-
-            loss = a + 0.5 * b
+            loss = agent.optimize(data)
             inner_optim.step(loss)
 
         # Outer-loop
-        data, rews = agent.collect_rollouts(env, torch.sigmoid(gamma))
+        data = agent.collect_rollouts(env, torch.sigmoid(gamma))
 
-        pi_loss = -(torch.sum(data["action_log"] * data["advantages"].detach()))
-        v_loss = value_loss(data["return"], data["value"])
-        meta_loss = pi_loss + config["a2c"]["value_coeff"] * v_loss
+        meta_loss = agent.optimize(data)
 
         meta_optim.zero_grad()
         meta_loss.backward()
@@ -66,26 +63,34 @@ def train_mgrl_a2c(
         torchopt.stop_gradient(agent.ac)
         torchopt.stop_gradient(inner_optim)
 
-        # TODO: Refactor after debugging
-        if epoch % 10 == 0 and epoch != 0:
-            with torch.no_grad():
-                print(
-                    f"Average reward during episodes {epoch} is "
-                    f"avg: {sum(debug_rews)/len(debug_rews)} max: {max(debug_rews)} "
-                    f"min: {min(debug_rews)} "
-                    f"gamma: {torch.sigmoid(gamma):.4f}"
-                )
-            debug_rews = []
+        # # TODO: Refactor after debugging
+        # if epoch % 10 == 0 and epoch != 0:
+        #     with torch.no_grad():
+        #         print(
+        #             f"Average reward during episodes {epoch} is "
+        #             f"avg: {sum(debug_rews)/len(debug_rews)} max: {max(debug_rews)} "
+        #             f"min: {min(debug_rews)} "
+        #             f"gamma: {torch.sigmoid(gamma):.4f}"
+        #         )
+        #     debug_rews = []
 
 
-def train_a2c(config, envs: list[gym.Env]):
+def train_a2c(
+    config,
+    envs: list[gym.Env],
+    test_envs: list[gym.Env] = None,
+    writer: SummaryWriter = None,
+):
     assert len(envs), 1
     env = envs[0]
 
     agent = A2C(
         obs_space=env.observation_space,
         action_space=env.action_space,
-        num_steps=config["num_steps"],
+        value_coeff=config["a2c"]["value_coeff"],
+        writer=writer,
+        ac_kwargs=config["actor_critic"],
+        max_episode_steps=config["max_episode_steps"],
         device=config["device"],
     )
 
