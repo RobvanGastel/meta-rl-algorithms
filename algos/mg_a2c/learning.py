@@ -34,45 +34,32 @@ def train_mg_a2c(
     )
 
     # Torchopt optimizers
-    inner_optim = torchopt.MetaSGD(agent.ac, lr=5e-3)
-    meta_optim = torchopt.SGD([gamma], lr=1e-3)
+    inner_optim = torchopt.MetaSGD(agent.ac, lr=config["inner_lr"])
+    meta_optim = torchopt.SGD([gamma], lr=config["outer_lr"])
 
     # TODO: Refactor after debugging
-    debug_rews = []
-    for epoch in range(config["epochs"]):
+    for _ in range(config["epochs"]):
 
         for _ in range(config["inner_steps"]):
             data = agent.collect_rollouts(env, torch.sigmoid(gamma))
-            # debug_rews.append(rews)
-
             loss = agent.optimize(data)
+
             inner_optim.step(loss)
 
         # Outer-loop
         data = agent.collect_rollouts(env, torch.sigmoid(gamma))
-
         meta_loss = agent.optimize(data)
 
         meta_optim.zero_grad()
         meta_loss.backward()
-        torchopt.clip_grad_norm(40)
-        # print(f"gamma.grad = {gamma.grad!r}")
+
+        # Log the gradient magnitude
+        writer.add_scalar("A2C/grad_gamma", gamma.grad, agent.global_step)
         meta_optim.step()
 
         # Detach the graph
         torchopt.stop_gradient(agent.ac)
         torchopt.stop_gradient(inner_optim)
-
-        # # TODO: Refactor after debugging
-        # if epoch % 10 == 0 and epoch != 0:
-        #     with torch.no_grad():
-        #         print(
-        #             f"Average reward during episodes {epoch} is "
-        #             f"avg: {sum(debug_rews)/len(debug_rews)} max: {max(debug_rews)} "
-        #             f"min: {min(debug_rews)} "
-        #             f"gamma: {torch.sigmoid(gamma):.4f}"
-        #         )
-        #     debug_rews = []
 
 
 def train_a2c(
@@ -97,7 +84,7 @@ def train_a2c(
     # Define meta parameter
     gamma = nn.Parameter(-torch.log((1 / torch.tensor(config["gamma"])) - 1))
 
-    inner_optim = torch.optim.Adam(agent.ac.parameters(), lr=5e-3)
+    inner_optim = torch.optim.Adam(agent.ac.parameters(), lr=config["inner_lr"])
 
     # TODO: Refactor after debugging
     inner_loop = 2
@@ -110,10 +97,7 @@ def train_a2c(
             data, rews = agent.collect_rollouts(env, torch.sigmoid(gamma))
             debug_rews.append(rews)
 
-            a = -(torch.sum(data["action_log"] * data["advantages"].detach()))
-            b = value_loss(data["return"], data["value"])
-
-            loss = a + config["a2c"]["value_coeff"] * b
+            loss = agent.optimize(data)
 
             inner_optim.zero_grad()
             loss.backward()

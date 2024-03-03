@@ -11,20 +11,19 @@ import gymnasium as gym
 from gymnasium.wrappers import RecordEpisodeStatistics
 
 from utils.logger import configure_logger
-from algos.rl2_ppo.learning import train_rl2_ppo
 from algos.mg_a2c.learning import train_a2c, train_mg_a2c
-from envs.krazy_world.gym_wrapper import initialize_distribution
+
+# from algos.rl2_ppo.learning import train_rl2_ppo
+# from envs.krazy_world.gym_wrapper import initialize_distribution
+# KrazyWorld distribution
+# envs, test_envs = initialize_distribution(config["max_episode_steps"])
 
 
 def main(config):
     logging.info(f"Start meta-training, experiment name: {config['name']}")
     logging.info(f"config: {config}")
 
-    # KrazyWorld distribution
-    # envs, test_envs = initialize_distribution(config["max_episode_steps"])
-
     envs = [RecordEpisodeStatistics(gym.make("CartPole-v0"))]
-    # envs = [RecordEpisodeStatistics(debug ...))]
 
     logging.info(
         f"Env spaces: {envs[0].observation_space, envs[0].action_space}, "
@@ -81,5 +80,9 @@ if __name__ == "__main__":
     # Seed Numpy and Torch
     np.random.seed(config["seed"])
     torch.manual_seed(config["seed"])
+
+    import warnings
+
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     main(config)

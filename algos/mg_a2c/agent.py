@@ -93,18 +93,16 @@ class A2C(nn.Module):
         return self.buffer.get()
 
     def optimize(self, batch):
-
         pi_loss = -(
             torch.sum(batch["action_log"] * batch["advantages"].detach())
         )
         v_loss = self.value_loss(batch["return"], batch["value"])
-
         loss = pi_loss + self.value_coeff * v_loss
-        # TODO: Put logic here ...
 
+        ret = batch["advantages"] + batch["value"]
         y_pred, y_true = (
-            batch["value"].clone().detach().reshape(-1).cpu().numpy(),
-            batch["return"].clone().detach().reshape(-1).cpu().numpy(),
+            batch["value"].detach().reshape(-1).cpu().numpy(),
+            ret.detach().reshape(-1).cpu().numpy(),
         )
         var_y = np.var(y_true)
         explained_var = 0 if var_y == 0 else 1 - np.var(y_true - y_pred) / var_y

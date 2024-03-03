@@ -14,7 +14,7 @@ class PPO(nn.Module):
         ac_kwargs,
         writer,
         device,
-        seed=0,
+        seed=42,
         lr=3e-4,
         clip_ratio=0.2,
         value_coeff=0.5,

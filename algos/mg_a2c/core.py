@@ -7,6 +7,7 @@ class ActorCritic(nn.Module):
     def __init__(self, obs_space, action_space, hidden_size, **ac_kwargs):
         super().__init__()
 
+        # TODO: MLP function or not?
         self.actor = nn.Sequential(
             nn.Linear(obs_space.shape[0], hidden_size),
             nn.ReLU(),
@@ -24,8 +25,6 @@ class ActorCritic(nn.Module):
         action_logits = self.actor(obs)
         pi = Categorical(logits=action_logits)
 
-        # TODO: Move sampling and log_prob to
-        # _distribution function for the actor interface.
         action = pi.sample()
         action_log_prob = pi.log_prob(action)
         value = self.critic(obs).view(-1)

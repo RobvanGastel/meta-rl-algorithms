@@ -5,15 +5,12 @@ epochs: 1000
 max_episode_steps: 200
 gamma: 0.95
 
-# Meta-parameters
+# parameters
 inner_steps: 2
-inner_lr: 1.0e-3
-outer_lr: 1.0e-2
+inner_lr: 1.0e-2
 
 actor_critic:
   hidden_size: 128
-  # actor_hidden_sizes: [64, 64, 64]
-  # critic_hidden_sizes: [64, 64, 64]
 
 a2c:
   value_coeff: 0.5
