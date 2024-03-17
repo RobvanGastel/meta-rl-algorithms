@@ -10,7 +10,8 @@ def configure_logger(
     log_format="%(asctime)s | %(levelname)-8s | %(message)s",
     date_format="%Y-%m-%dT%T%Z",
 ):
-    os.mkdir(os.path.join(log_dir))
+    # Setup logging instance and logging directory
+    os.makedirs(os.path.join(log_dir), exist_ok=True)
 
     logging.basicConfig(
         level=log_level,

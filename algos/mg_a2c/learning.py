@@ -37,7 +37,6 @@ def train_mg_a2c(
     inner_optim = torchopt.MetaSGD(agent.ac, lr=config["inner_lr"])
     meta_optim = torchopt.SGD([gamma], lr=config["outer_lr"])
 
-    # TODO: Refactor after debugging
     for _ in range(config["epochs"]):
 
         for _ in range(config["inner_steps"]):
@@ -86,7 +85,6 @@ def train_a2c(
 
     inner_optim = torch.optim.Adam(agent.ac.parameters(), lr=config["inner_lr"])
 
-    # TODO: Refactor after debugging
     inner_loop = 2
     debug_rews = []
     value_loss = nn.MSELoss()
@@ -103,7 +101,6 @@ def train_a2c(
             loss.backward()
             inner_optim.step()
 
-        # TODO: Refactor after debugging
         if epoch % 10 == 0:
             with torch.no_grad():
                 print(
