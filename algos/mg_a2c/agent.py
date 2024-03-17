@@ -21,13 +21,15 @@ class A2C(nn.Module):
         super().__init__()
         torch.manual_seed(seed)
 
+        self.global_step = 0
         self.writer = writer
         self.value_coeff = value_coeff
         self.max_episode_steps = max_episode_steps
-        self.global_step = 0
 
         self.buffer = RolloutBuffer(
-            size=self.max_episode_steps, obs_dim=obs_space.shape[0]
+            self.max_episode_steps,
+            obs_space,
+            device=device,
         )
 
         self.ac = ActorCritic(
@@ -57,9 +59,6 @@ class A2C(nn.Module):
 
             # if termination or truncated (time-limit)
             if termination or truncated:
-                # TODO: Log every episode in tracking tool
-
-                # Finish the episode
                 last_value = None
                 if truncated:
                     with torch.no_grad():
@@ -100,6 +99,7 @@ class A2C(nn.Module):
         loss = pi_loss + self.value_coeff * v_loss
 
         ret = batch["advantages"] + batch["value"]
+
         y_pred, y_true = (
             batch["value"].detach().reshape(-1).cpu().numpy(),
             ret.detach().reshape(-1).cpu().numpy(),

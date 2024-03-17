@@ -52,8 +52,8 @@ def main(config):
 
     # Temporary interface to allow all agents to run in similar fashion
     # train_<meta>_<agent>(config, envs: list[Env], test_envs: list[Env], writer)
-    # train_mg_a2c(config, envs, writer=writer)
-    train_rl2_ppo(config, envs, test_envs=test_envs, writer=writer)
+    train_mg_a2c(config, envs, writer=writer)
+    # train_rl2_ppo(config, envs, test_envs=test_envs, writer=writer)
 
 
 if __name__ == "__main__":

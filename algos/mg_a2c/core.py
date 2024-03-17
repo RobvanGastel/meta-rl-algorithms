@@ -1,23 +1,35 @@
 import torch
+import numpy as np
 import torch.nn as nn
 from torch.distributions import Categorical
 
+from utils.misc import mlp
+
 
 class ActorCritic(nn.Module):
-    def __init__(self, obs_space, action_space, hidden_size, **ac_kwargs):
+    def __init__(
+        self,
+        obs_space,
+        action_space,
+        actor_hidden_sizes,
+        critic_hidden_sizes,
+        **ac_kwargs
+    ):
         super().__init__()
 
         # TODO: MLP function or not?
-        self.actor = nn.Sequential(
-            nn.Linear(obs_space.shape[0], hidden_size),
-            nn.ReLU(),
-            nn.Linear(hidden_size, action_space.n),
+        self.actor = mlp(
+            [obs_space.shape[0]] + list(actor_hidden_sizes) + [action_space.n],
+            [np.sqrt(2)] * (len(actor_hidden_sizes)) + [0.01],
+            nn.ReLU,
+            nn.Identity,
         )
 
-        self.critic = nn.Sequential(
-            nn.Linear(obs_space.shape[0], hidden_size),
-            nn.ReLU(),
-            nn.Linear(hidden_size, 1),
+        self.critic = mlp(
+            [obs_space.shape[0]] + list(critic_hidden_sizes) + [1],
+            [np.sqrt(2)] * (len(critic_hidden_sizes)) + [1.00],
+            nn.ReLU,
+            nn.Identity,
         )
 
     def step(self, obs):

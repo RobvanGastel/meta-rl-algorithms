@@ -15,16 +15,16 @@ class CategoricalActor(Actor):
         input_dim,
         action_dim,
         hidden_sizes,
-        hidden_activation,
-        output_activation,
+        activation=nn.ReLU,
+        out_activation=nn.Identity,
     ):
         super().__init__()
 
         self.logits_network = mlp(
             [input_dim] + list(hidden_sizes) + [action_dim],
             [np.sqrt(2)] * (len(hidden_sizes)) + [0.01],
-            hidden_activation,
-            output_activation,
+            activation,
+            out_activation,
         )
 
     def _distribution(self, obs):
@@ -41,16 +41,16 @@ class GaussianActor(Actor):
         input_dim,
         action_dim,
         hidden_sizes,
-        hidden_activation,
-        output_activation,
+        activation=nn.ReLU,
+        out_activation=nn.Identity,
     ):
         super().__init__()
 
         self.mu_network = mlp(
             [input_dim] + list(hidden_sizes) + [action_dim],
             [np.sqrt(2)] * (len(hidden_sizes)) + [0.01],
-            hidden_activation,
-            output_activation,
+            activation,
+            out_activation,
         )
         self.log_std = nn.Parameter(-0.5 * torch.ones(1, action_dim))
 
@@ -66,14 +66,18 @@ class GaussianActor(Actor):
 
 class Critic(nn.Module):
     def __init__(
-        self, input_dim, hidden_sizes, hidden_activation, output_activation
+        self,
+        input_dim,
+        hidden_sizes,
+        activation=nn.ReLU,
+        out_activation=nn.Identity,
     ):
         super().__init__()
         self.value_network = mlp(
             [input_dim] + list(hidden_sizes) + [1],
             [np.sqrt(2)] * (len(hidden_sizes)) + [1.0],
-            hidden_activation,
-            output_activation,
+            activation,
+            out_activation,
         )
 
     def forward(self, obs):
@@ -91,8 +95,6 @@ class ActorCritic(nn.Module):
         actor_hidden_sizes,
         critic_hidden_sizes,
         device,
-        hidden_activation=nn.ReLU,
-        output_activation=nn.ReLU,
     ):
         super().__init__()
 
@@ -115,8 +117,6 @@ class ActorCritic(nn.Module):
                 rnn_size,
                 self.action_dim,
                 actor_hidden_sizes,
-                hidden_activation,
-                output_activation,
             ).to(device)
 
         elif isinstance(action_space, Discrete):
@@ -126,13 +126,9 @@ class ActorCritic(nn.Module):
                 rnn_size,
                 self.action_dim,
                 actor_hidden_sizes,
-                hidden_activation,
-                output_activation,
             ).to(device)
 
-        self.critic = Critic(
-            rnn_size, critic_hidden_sizes, hidden_activation, output_activation
-        ).to(device)
+        self.critic = Critic(rnn_size, critic_hidden_sizes).to(device)
 
         ### RNN embedding layer
         # Observation encoder input: (batch size, obs embedding)

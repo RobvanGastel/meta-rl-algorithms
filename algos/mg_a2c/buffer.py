@@ -21,10 +21,11 @@ class RolloutBuffer:
     def __init__(
         self,
         size,
-        obs_dim,
+        obs_space,
         device=None,
     ):
         self.device = device
+        obs_dim = obs_space.shape[0]
 
         self.data = {
             "obs": torch.zeros((size, obs_dim)).to(device),
@@ -44,10 +45,9 @@ class RolloutBuffer:
         value,
     ):
         assert self.ptr < self.max_size
-
-        self.data["obs"][self.ptr] = torch.tensor(obs).to(self.device)
-        self.data["action_log"][self.ptr] = action_log_prob
         self.data["value"][self.ptr] = value
+        self.data["action_log"][self.ptr] = action_log_prob
+        self.data["obs"][self.ptr] = torch.tensor(obs).to(self.device)
         self.data["reward"][self.ptr] = torch.tensor(reward).to(self.device)
         self.ptr += 1
 
@@ -70,8 +70,6 @@ class RolloutBuffer:
         for bootstrapping the reward-to-go and account for timesteps beyond
         the arbitrary episode horizon, the epoch cutoff.
         """
-        # traj = slice(self.start, self.ptr)
-
         if last_value is None:
             last_value = torch.tensor([0.0]).to(self.device)
 
