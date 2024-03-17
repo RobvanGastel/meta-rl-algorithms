@@ -11,7 +11,12 @@ from utils.misc import Actor, mlp, layer_init
 
 class CategoricalActor(Actor):
     def __init__(
-        self, input_dim, action_dim, hidden_sizes, hidden_activation, output_activation
+        self,
+        input_dim,
+        action_dim,
+        hidden_sizes,
+        hidden_activation,
+        output_activation,
     ):
         super().__init__()
 
@@ -32,7 +37,12 @@ class CategoricalActor(Actor):
 
 class GaussianActor(Actor):
     def __init__(
-        self, input_dim, action_dim, hidden_sizes, hidden_activation, output_activation
+        self,
+        input_dim,
+        action_dim,
+        hidden_sizes,
+        hidden_activation,
+        output_activation,
     ):
         super().__init__()
 
@@ -55,7 +65,9 @@ class GaussianActor(Actor):
 
 
 class Critic(nn.Module):
-    def __init__(self, input_dim, hidden_sizes, hidden_activation, output_activation):
+    def __init__(
+        self, input_dim, hidden_sizes, hidden_activation, output_activation
+    ):
         super().__init__()
         self.value_network = mlp(
             [input_dim] + list(hidden_sizes) + [1],
@@ -156,11 +168,15 @@ class ActorCritic(nn.Module):
                 torch.zeros(1, batch_size, self.rnn_size).to(self.device),
             )
         elif self.rnn_type == "gru":
-            rnn_state = torch.zeros(1, batch_size, self.rnn_size).to(self.device)
+            rnn_state = torch.zeros(1, batch_size, self.rnn_size).to(
+                self.device
+            )
 
         return rnn_state
 
-    def recurrent_state(self, obs, prev_action, prev_reward, rnn_state, training=False):
+    def recurrent_state(
+        self, obs, prev_action, prev_reward, rnn_state, training=False
+    ):
 
         # previous action one-hot encoding: (batch_size, act_dim)
         prev_action = self._one_hot(prev_action)
@@ -169,7 +185,9 @@ class ActorCritic(nn.Module):
         obs_enc = self.obs_enc(obs)
 
         # Concat the encodings with previous reward
-        rnn_input = torch.cat([obs_enc, prev_action, prev_reward], dim=-1).float()
+        rnn_input = torch.cat(
+            [obs_enc, prev_action, prev_reward], dim=-1
+        ).float()
 
         if training:
             # Input rnn: (batch size, sequence length, features)
@@ -193,7 +211,15 @@ class ActorCritic(nn.Module):
 
         return self.critic(rnn_out), rnn_state
 
-    def pi(self, obs, prev_action, prev_reward, rnn_state, action=None, training=False):
+    def pi(
+        self,
+        obs,
+        prev_action,
+        prev_reward,
+        rnn_state,
+        action=None,
+        training=False,
+    ):
         rnn_out, rnn_state = self.recurrent_state(
             obs, prev_action, prev_reward, rnn_state, training
         )

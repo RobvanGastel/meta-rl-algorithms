@@ -127,7 +127,10 @@ def train_rl2_ppo(
         if meta_epoch % config["log_every_n"] == 0 and meta_epoch != 0:
 
             test_env = np.random.choice(test_envs, 1)[0]
-            if meta_epoch % (config["log_every_n"] * 5) == 0:
+            if (
+                meta_epoch % (config["log_every_n"] * 5) == 0
+                and not test_env.is_debug
+            ):
                 make_gif(agent, test_env, meta_epoch, config)
 
             # Save the weights

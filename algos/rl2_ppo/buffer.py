@@ -2,22 +2,6 @@ import torch
 from gymnasium.spaces import Box, Discrete
 
 
-def discount_cumsum(x, discount):
-    """
-    Compute discounted cumulative sums of a vector using PyTorch.
-
-    :param x: Input tensor.
-    :param discount: Discount factor.
-    :return: Discounted cumulative sum tensor.
-    """
-    result = torch.zeros_like(x)
-    running_add = 0
-    for t in reversed(range(len(x))):
-        running_add = x[t] + discount * running_add
-        result[t] = running_add
-    return result
-
-
 class RolloutBuffer:
     def __init__(
         self,
@@ -54,7 +38,7 @@ class RolloutBuffer:
         self.episodes = []
 
         self.gamma, self.gae_lambda = gamma, gae_lambda
-        self.max_size, self.curr_size = size, 0
+        self.max_size, self.size = size, 0
 
     def store(
         self,
@@ -67,20 +51,16 @@ class RolloutBuffer:
         value,
         log_prob,
     ):
-        assert self.curr_size <= self.max_size
-        self.data["obs"][self.curr_size] = obs
-        self.data["action"][self.curr_size] = action
-        self.data["reward"][self.curr_size] = torch.tensor(reward).to(
-            self.device
-        )
-        self.data["termination"][self.curr_size] = torch.tensor(term).to(
-            self.device
-        )
-        self.data["prev_action"][self.curr_size] = prev_action
-        self.data["prev_reward"][self.curr_size] = prev_reward
-        self.data["value"][self.curr_size] = value
-        self.data["log_prob"][self.curr_size] = log_prob
-        self.curr_size += 1
+        assert self.size <= self.max_size
+        self.data["obs"][self.size] = obs
+        self.data["action"][self.size] = action
+        self.data["reward"][self.size] = torch.tensor(reward).to(self.device)
+        self.data["termination"][self.size] = torch.tensor(term).to(self.device)
+        self.data["prev_action"][self.size] = prev_action
+        self.data["prev_reward"][self.size] = prev_reward
+        self.data["value"][self.size] = value
+        self.data["log_prob"][self.size] = log_prob
+        self.size += 1
 
     def reset(self):
         self.empty_buffer()
@@ -89,13 +69,11 @@ class RolloutBuffer:
     def empty_buffer(self):
         for key, val in self.data.items():
             self.data[key] = torch.zeros_like(val)
-        self.curr_size = 0
+        self.size = 0
 
     def finish_path(self, last_value, last_termination):
 
         # Calculate advantages
-        # TODO: Refactor to discount_cumsum function to take advatange of
-        # parallel function.
         prev_advantage = 0
         for step in reversed(range(self.max_size)):
 

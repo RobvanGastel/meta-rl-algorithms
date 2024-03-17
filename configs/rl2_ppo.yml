@@ -7,7 +7,7 @@ meta_epochs: 100_000
 log_every_n: 10
 
 # Environment
-max_episode_steps: 50
+max_episode_steps: 5
 
 
 # Agent
@@ -15,15 +15,15 @@ update_every_n: 5
 update_epochs: 1
 actor_critic:
   rnn_type: "gru"
-  obs_enc_dim: 64 
-  rnn_size: 64
-  actor_hidden_sizes: [256, 256, 256]
-  critic_hidden_sizes: [256, 256, 256]
+  obs_enc_dim: 12 
+  rnn_size: 12
+  actor_hidden_sizes: [32, 32]
+  critic_hidden_sizes: [32, 32]
 
 ppo:
   lr: 1.0e-3
   gae_lambda: 0.99
   clip_ratio: 0.2
-  value_coeff: 0.5
-  max_grad_norm: 0.5
-  entropy_coeff: 0.01
+  value_coeff: 0.8
+  max_grad_norm: 10.0
+  entropy_coeff: 0.00

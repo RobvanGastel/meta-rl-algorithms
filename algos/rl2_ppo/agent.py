@@ -61,24 +61,19 @@ class PPO(nn.Module):
         global_step,
         target_kl=None,
     ):
-        pi_info = dict(
-            kl=torch.tensor(0), ent=torch.tensor(0), cf=torch.tensor(0)
-        )
+        info = dict(kl=torch.tensor(0), ent=torch.tensor(0), cf=torch.tensor(0))
         zero_rnn_state = self.actor_critic.initialize_state(
             batch_size=batch_size
         )
 
         for _ in range(update_epochs):
             # TODO: Potential of mini-batching the episodes
-
-            pi_loss, pi, pi_info = self._compute_policy_loss(
-                batch, zero_rnn_state
-            )
+            pi_loss, pi, info = self._compute_policy_loss(batch, zero_rnn_state)
             v_loss, v = self._compute_value_loss(batch, zero_rnn_state)
 
             loss = (
                 pi_loss
-                - self.entropy_coeff * pi_info["ent"]
+                - self.entropy_coeff * info["ent"]
                 + self.value_coeff * v_loss
             )
 
@@ -89,7 +84,7 @@ class PPO(nn.Module):
             )
             self.optimizer.step()
 
-            if target_kl and pi_info["kl"] > 1.5 * target_kl:
+            if target_kl and info["kl"] > 1.5 * target_kl:
                 break
 
         # Logging of the agent variables
@@ -97,28 +92,18 @@ class PPO(nn.Module):
             batch["value"].reshape(-1).cpu().numpy(),
             batch["return"].reshape(-1).cpu().numpy(),
         )
+        # print(y_pred.shape, y_true.shape)
+        print(y_pred[:5], y_true[:5])
         var_y = np.var(y_true)
-        explained_var = 0 if var_y == 0 else 1 - np.var(y_true - y_pred) / var_y
+        exp_var = np.nan if var_y == 0 else 1 - np.var(y_true - y_pred) / var_y
 
         # Value function distribution
-        self.writer.add_histogram(
-            "PPO/value_histogram", batch["value"], global_step
-        )
-        self.writer.add_histogram(
-            "PPO/policy_histogram", pi.sample(), global_step
-        )
-        self.writer.add_scalar(
-            "PPO/explained_variance", explained_var, global_step
-        )
-        self.writer.add_scalar(
-            "PPO/entropy", pi_info["ent"].item(), global_step
-        )
-        self.writer.add_scalar(
-            "PPO/approx_kl", pi_info["kl"].item(), global_step
-        )
-        self.writer.add_scalar(
-            "PPO/clip_frac", pi_info["cf"].item(), global_step
-        )
+        self.writer.add_histogram("PPO/value_hist", batch["value"], global_step)
+        self.writer.add_histogram("PPO/policy_hist", pi.sample(), global_step)
+        self.writer.add_scalar("PPO/explained_variance", exp_var, global_step)
+        self.writer.add_scalar("PPO/entropy", info["ent"].item(), global_step)
+        self.writer.add_scalar("PPO/approx_kl", info["kl"].item(), global_step)
+        self.writer.add_scalar("PPO/clip_frac", info["cf"].item(), global_step)
         self.writer.add_scalar("PPO/value_loss", v_loss.item(), global_step)
         self.writer.add_scalar("PPO/policy_loss", pi_loss.item(), global_step)
 
@@ -144,12 +129,11 @@ class PPO(nn.Module):
         )
         loss_v_clipped = (v_clipped - b_return) ** 2
         loss_v_max = torch.max(loss_v_unclipped, loss_v_clipped)
-        loss_v = 0.5 * loss_v_max.mean()
+        loss_v = loss_v_max.mean()
 
         return loss_v, v
 
     def _compute_policy_loss(self, batch, rnn_state):
-
         b_obs, b_act, b_advantage, b_log_prob, b_prev_act, b_prev_rew = (
             batch["obs"],
             batch["action"],
@@ -161,7 +145,7 @@ class PPO(nn.Module):
         b_prev_rew = b_prev_rew.unsqueeze(-1)
 
         # Normalize the advtange, done per batch to not affect the mini-batch too much
-        b_advantage = (b_advantage - b_advantage.mean()) / (
+        norm_adv = (b_advantage - b_advantage.mean()) / (
             b_advantage.std() + 1e-8
         )
 
@@ -173,20 +157,21 @@ class PPO(nn.Module):
             action=b_act,
             training=True,
         )
+
         ratio = torch.exp(log_prob - b_log_prob)
 
         # Policy loss
         clip_advantage = (
-            torch.clamp(ratio, 1 - self.clip_ratio, 1 + self.clip_ratio)
-            * b_advantage
+            torch.clamp(ratio, 1.0 - self.clip_ratio, 1.0 + self.clip_ratio)
+            * norm_adv
         )
-        loss_pi = -torch.min(ratio * b_advantage, clip_advantage).mean()
+        loss_pi = -torch.min(ratio * norm_adv, clip_advantage).mean()
 
         # Debug info
         with torch.no_grad():
             approx_kl = (b_log_prob - log_prob).mean()
-            clipped = ratio.gt(1 + self.clip_ratio) | ratio.lt(
-                1 - self.clip_ratio
+            clipped = ratio.gt(1.0 + self.clip_ratio) | ratio.lt(
+                1.0 - self.clip_ratio
             )
             clip_frac = clipped.float().mean()
             ent = pi.entropy().mean()
