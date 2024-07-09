@@ -39,16 +39,14 @@ def train_mg_a2c(
 
     for _ in range(config["epochs"]):
 
-        for _ in range(config["inner_steps"]):
+        for inner_step in range(config["inner_steps"]):
             data = agent.collect_rollouts(env, torch.sigmoid(gamma))
             loss = agent.optimize(data)
 
             inner_optim.step(loss)
+            meta_loss = meta_loss + (loss - meta_loss) / (inner_step + 1)
 
         # Outer-loop
-        data = agent.collect_rollouts(env, torch.sigmoid(gamma))
-        meta_loss = agent.optimize(data)
-
         meta_optim.zero_grad()
         meta_loss.backward()
 
