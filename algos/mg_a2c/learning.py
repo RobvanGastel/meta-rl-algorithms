@@ -39,6 +39,7 @@ def train_mg_a2c(
 
     for _ in range(config["epochs"]):
 
+        meta_loss = 0.0
         for inner_step in range(config["inner_steps"]):
             data = agent.collect_rollouts(env, torch.sigmoid(gamma))
             loss = agent.optimize(data)
@@ -57,6 +58,8 @@ def train_mg_a2c(
         # Detach the graph
         torchopt.stop_gradient(agent.ac)
         torchopt.stop_gradient(inner_optim)
+
+        print(torch.sigmoid(gamma))
 
 
 def train_a2c(

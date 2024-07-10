@@ -3,3 +3,4 @@ moviepy==1.0.3
 PyYAML==6.0
 tensorboard==2.11.0
 torch==1.13.1
+torchopt
